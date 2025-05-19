@@ -242,20 +242,27 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        // TODO:
         switch(event){
             case CATACLYSM: cell.setLifePoints(0); break;
             case FAMINE: cell.setLifePoints(cell.getLifePoints()-1); break;
             case BLOOM: cell.setLifePoints(cell.getLifePoints()+2); break;
             case BLOOD_MOON: 
                 if (cell.getMood() == CellMood.VAMPIRE){
-                    List<Cell> neighCells = cell.getNeighbors().stream()
+                    long n = cell.getNeighbors().stream()
                                                 .map(Tile::getCell).
                                                 filter(c -> c.getMood() != CellMood.VAMPIRE)
-                                                .collect(Collectors.toList());
+                                                .peek(c -> c.setLifePoints(c.getLifePoints()-1))
+                                                .peek(c -> c.setMood(CellMood.VAMPIRE))
+                                                .collect(Collectors.counting());
+                    cell.setLifePoints(cell.getLifePoints() + (int) n);
                 }
                 break;
-            case SANCTUARY: break;
+            case SANCTUARY: 
+                if (cell.getMood() == CellMood.HEALER)
+                    cell.setLifePoints(cell.getLifePoints() + 1);
+                else if (cell.getMood() == CellMood.VAMPIRE)
+                    cell.setMood(CellMood.NAIVE);
+                break;
         }
     }
 
