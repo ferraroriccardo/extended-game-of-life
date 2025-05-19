@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
@@ -242,6 +243,9 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
+        Objects.requireNonNull(event);
+        Objects.requireNonNull(cell);
+
         switch(event){
             case CATACLYSM: cell.setLifePoints(0); break;
             case FAMINE: cell.setLifePoints(cell.getLifePoints()-1); break;
@@ -263,6 +267,8 @@ public class Game {
                 else if (cell.getMood() == CellMood.VAMPIRE)
                     cell.setMood(CellMood.NAIVE);
                 break;
+            default:  //wrong cell mood
+            break;
         }
     }
 
@@ -274,7 +280,13 @@ public class Game {
      * @param targetCoordinates the list of coordinates of cells to update
      */
     public void setMood(CellMood mood, List<Coord> targetCoordinates) {
-        // TODO: implement mood assignment for specified cells
+        Objects.requireNonNull(mood);
+        Objects.requireNonNull(targetCoordinates);
+
+        for (Coord c : targetCoordinates){
+            Objects.requireNonNull(c);
+            board.getTile(c).getCell().setMood(mood);
+        }
     }
 
     /**
@@ -285,7 +297,14 @@ public class Game {
      * @param coordinates the list of cell coordinates to update
      */
     public void setMoods(CellMood mood, List<Coord> coordinates) {
-        // TODO: implement moods assignment for specified coordinates
+        // TODO: try to understand the difference between this and the previous method
+        Objects.requireNonNull(mood);
+        Objects.requireNonNull(coordinates);
+
+        for (Coord c : coordinates){
+            Objects.requireNonNull(c);
+            board.getTile(c).getCell().setMood(mood);
+        }
     }
 
     /**
