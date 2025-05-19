@@ -6,15 +6,12 @@ import java.util.List;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -24,14 +21,13 @@ import jakarta.persistence.Transient;
  * Entity representing a cell in the Extended Game of Life.
  *
  * Serves as the base class for all cell types, embedding its board coordinates,
- * alive/dead state, energy budget (lifePoints), and interaction mood. 
+ * alive/dead state, energy budget (lifePoints), and interaction mood.
  * Each Cell is linked to a Board, Game, Tile, and a history of Generations.
- * Implements Evolvable to apply Conway’s rules plus energy checks each generation,
+ * Implements Evolvable to apply Conway’s rules plus energy checks each
+ * generation,
  * and Interactable to model cell–cell energy exchanges.
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "cell_type")
 public class Cell implements Evolvable, Interactable {
 
     @Id
@@ -43,10 +39,8 @@ public class Cell implements Evolvable, Interactable {
      */
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "x",
-            column = @Column(name = "cell_x", nullable = false)),
-        @AttributeOverride(name = "y",
-            column = @Column(name = "cell_y", nullable = false))
+            @AttributeOverride(name = "x", column = @Column(name = "cell_x", nullable = false)),
+            @AttributeOverride(name = "y", column = @Column(name = "cell_y", nullable = false))
     })
     private Coord cellCoord;
 
@@ -56,7 +50,7 @@ public class Cell implements Evolvable, Interactable {
 
     /** Persisted lifepoints (default 0) */
     @Column(name = "lifepoints", nullable = false)
-    protected Integer lifepoints=0;
+    protected Integer lifepoints = 0;
 
     /** Reference to the parent board (read-only). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -67,7 +61,7 @@ public class Cell implements Evolvable, Interactable {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "game_id", nullable = false, updatable = false)
     protected Game game;
-    
+
     /** Transient list tracking generations this cell belongs to. */
     @Transient
     protected List<Generation> generations = new ArrayList<>();
@@ -77,10 +71,12 @@ public class Cell implements Evolvable, Interactable {
     protected Tile tile;
 
     /** Default constructor for JPA compliance. */
-    public Cell() { }
+    public Cell() {
+    }
 
     /**
      * Constructs a new Cell at given coordinates, defaulting to dead.
+     * 
      * @param coord the cell's coordinates
      */
     public Cell(Coord tileCoord) {
@@ -90,6 +86,7 @@ public class Cell implements Evolvable, Interactable {
 
     /**
      * Constructs a new Cell with its tile, board, and game context.
+     * 
      * @param coord the cell's coordinates
      * @param tile  the owning Tile
      * @param board the Board context
@@ -104,13 +101,14 @@ public class Cell implements Evolvable, Interactable {
     }
 
     /**
-     * Applies the classic Conway’s Game of Life rules to calculate the cell’s next alive/dead state.
+     * Applies the classic Conway’s Game of Life rules to calculate the cell’s next
+     * alive/dead state.
      *
      * Rules:
-     *   - Underpopulation: A live cell with fewer than 2 neighbors dies.
-     *   - Overpopulation: A live cell with more than 3 neighbors dies.
-     *   - Respawn: A dead cell with exactly 3 neighbors becomes alive.
-     *   - Survival: A live cell with 2 or 3 neighbors stays alive.
+     * - Underpopulation: A live cell with fewer than 2 neighbors dies.
+     * - Overpopulation: A live cell with more than 3 neighbors dies.
+     * - Respawn: A dead cell with exactly 3 neighbors becomes alive.
+     * - Survival: A live cell with 2 or 3 neighbors stays alive.
      *
      * @param aliveNeighbors the count of alive neighboring cells
      * @return true if the cell will live, false otherwise
@@ -132,7 +130,8 @@ public class Cell implements Evolvable, Interactable {
         else if (!this.isAlive && aliveNeighbors == 3) {
             willLive = true;
         }
-        // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive remains true
+        // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
+        // remains true
 
         return willLive;
     }
@@ -160,7 +159,8 @@ public class Cell implements Evolvable, Interactable {
     public int countAliveNeighbors() {
         int count = 0;
         for (Tile t : tile.getNeighbors()) {
-            if (t.getCell() != null && t.getCell().isAlive()) count++;
+            if (t.getCell() != null && t.getCell().isAlive())
+                count++;
         }
         return count;
     }
@@ -179,12 +179,14 @@ public class Cell implements Evolvable, Interactable {
     }
 
     /**
-     * Provides an unmodifiable history of all generations in which this cell has appeared.
+     * Provides an unmodifiable history of all generations in which this cell has
+     * appeared.
      *
      * Returns a copy of the internal list to prevent external modification
      * of the cell’s generation history.
      *
-     * @return an immutable List of Generation instances tracking this cell’s lineage
+     * @return an immutable List of Generation instances tracking this cell’s
+     *         lineage
      */
     public List<Generation> getGenerations() {
         return List.copyOf(generations);
@@ -238,8 +240,9 @@ public class Cell implements Evolvable, Interactable {
     /**
      * Returns a string representation of this cell’s position in the format "x,y".
      *
-     * Overrides Object.toString() to provide a concise coordinate-based representation.
-     *  
+     * Overrides Object.toString() to provide a concise coordinate-based
+     * representation.
+     * 
      * @return a comma-separated string of the cell’s X and Y coordinates
      */
     @Override
@@ -269,9 +272,10 @@ public class Cell implements Evolvable, Interactable {
     }
 
     /**
-     * Implements the interact() method of Interactable to 
+     * Implements the interact() method of Interactable to
      * definte the interaction between this cell and another cell.
-     * Implementations will adjust life points, mood, or other state based on the interaction rules.
+     * Implementations will adjust life points, mood, or other state based on the
+     * interaction rules.
      *
      * @param o the object to interact with
      */

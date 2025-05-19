@@ -9,15 +9,12 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyJoinColumn;
@@ -26,18 +23,15 @@ import jakarta.persistence.UniqueConstraint;
 
 /**
  * Entity representing a generation within a Game of Life simulation.
- * Each generation records the game state of every cell on the board at its given step.
+ * Each generation records the game state of every cell on the board at its
+ * given step.
  * 
- * Use createInitial(...) to construct the initial state (step 0), and createNextGeneration(...) to
+ * Use createInitial(...) to construct the initial state (step 0), and
+ * createNextGeneration(...) to
  * advance from a previous generation.
  */
 @Entity
-@Table(
-    name = "generation",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"game_id", "step"})
-)
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "generation_type")
+@Table(name = "generation", uniqueConstraints = @UniqueConstraint(columnNames = { "game_id", "step" }))
 public class Generation {
 
     @Id
@@ -63,17 +57,14 @@ public class Generation {
      * Keys are Cell entities; values are true for alive, false for dead.
      */
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-    name = "generation_state",
-    joinColumns = {
-        // This maps generation_state.generation_id → generation.id
-        @JoinColumn(name = "generation_id", referencedColumnName = "id"),
-        // These map generation_state.game_id    → generation.game_id
-        //           generation_state.board_id   → generation.board_id
-        @JoinColumn(name = "game_id",       referencedColumnName = "game_id"),
-        @JoinColumn(name = "board_id",      referencedColumnName = "board_id")
-    }
-    )
+    @CollectionTable(name = "generation_state", joinColumns = {
+            // This maps generation_state.generation_id → generation.id
+            @JoinColumn(name = "generation_id", referencedColumnName = "id"),
+            // These map generation_state.game_id → generation.game_id
+            // generation_state.board_id → generation.board_id
+            @JoinColumn(name = "game_id", referencedColumnName = "game_id"),
+            @JoinColumn(name = "board_id", referencedColumnName = "board_id")
+    })
     @MapKeyJoinColumn(name = "cell_id")
     @Column(name = "is_alive", nullable = false)
     private Map<Cell, Boolean> cellAlivenessStates = new HashMap<>();
@@ -81,13 +72,16 @@ public class Generation {
     /**
      * Protected no-argument constructor required by JPA.
      *
-     * This constructor is used by the persistence provider to create instances via reflection.
+     * This constructor is used by the persistence provider to create instances via
+     * reflection.
      * Do not invoke directly in application code.
      */
-    protected Generation() {}
+    protected Generation() {
+    }
 
     /**
-     * Internal constructor used by factory methods to fully initialize a Generation.
+     * Internal constructor used by factory methods to fully initialize a
+     * Generation.
      *
      * @param game  the Game instance this generation belongs to
      * @param board the Board context capturing the cell layout for this generation
@@ -102,7 +96,8 @@ public class Generation {
     /**
      * Backward-compatible constructor for partial initialization.
      *
-     * The Board reference will be set later by factory methods such as createNextGeneration.
+     * The Board reference will be set later by factory methods such as
+     * createNextGeneration.
      *
      * @param game the Game instance this generation belongs to
      * @param step the zero-based index of this generation in the game sequence
@@ -115,11 +110,11 @@ public class Generation {
     /**
      * Creates cells of a given type in place to the ones present at the coordinates
      *
-     * @param coords    list of coordinates whose Cells should be updated
-     * @param type the cell type to assign 
+     * @param coords list of coordinates whose Cells should be updated
+     * @param type   the cell type to assign
      */
     public void setType(List<Coord> coords, CellType type) {
-        
+
         // to be implemented for R1
     }
 
@@ -130,7 +125,7 @@ public class Generation {
      * @param game  the Game instance to initialize
      * @param board the Board context for the new generation
      * @return a new Generation representing step 0 with all cells set dead
-     * @throws ExtendedGameOfLifeException 
+     * @throws ExtendedGameOfLifeException
      */
     public static Generation createInitial(Game game, Board board) {
         game.clearGenerations();
@@ -141,7 +136,8 @@ public class Generation {
     }
 
     /**
-     * Creates the initial generation (step 0) with a specified subset of cells alive,
+     * Creates the initial generation (step 0) with a specified subset of cells
+     * alive,
      * captures their states, and records this generation in the game.
      *
      * @param game       the Game instance to initialize
@@ -150,9 +146,9 @@ public class Generation {
      * @return a new Generation representing step 0 with the given cells alive
      */
     public static Generation createInitial(Game game, Board board, List<Coord> aliveCells) {
-        Objects.requireNonNull(game,"Game cannot be null");
-        Objects.requireNonNull(board,"Board cannot be null");
-        Objects.requireNonNull(aliveCells,"aliveCells cannot be null");
+        Objects.requireNonNull(game, "Game cannot be null");
+        Objects.requireNonNull(board, "Board cannot be null");
+        Objects.requireNonNull(aliveCells, "aliveCells cannot be null");
 
         game.clearGenerations();
         Generation init = new Generation(game, board, 0);
@@ -166,7 +162,8 @@ public class Generation {
      * Advances from the given previous generation to the next step,
      * captures the new state snapshot, and appends it to the game history.
      *
-     * @param prev the previous Generation to base the next upon, cannot be {@code null}
+     * @param prev the previous Generation to base the next upon, cannot be
+     *             {@code null}
      * @return a new Generation representing the next sequential step
      */
     public static Generation createNextGeneration(Generation prev) {
@@ -180,13 +177,15 @@ public class Generation {
 
     /**
      * Captures the current state of every cell on the board
-     * into the persistent cellAlivenessStates map and returns an unmodifiable snapshot.
+     * into the persistent cellAlivenessStates map and returns an unmodifiable
+     * snapshot.
      *
      * Iterates over each Tile in the associated Board, validates that a Cell
      * exists on the tile, and records its isAlive value. After clearing any
      * previous state, it populates the map and returns an immutable copy.
      *
-     * @return an unmodifiable Map of Cell to Boolean indicating each cell’s alive state
+     * @return an unmodifiable Map of Cell to Boolean indicating each cell’s alive
+     *         state
      * @throws ExtendedGameOfLifeException if any Tile does not contain a Cell
      */
     public Map<Cell, Boolean> snapCells() {
@@ -211,11 +210,11 @@ public class Generation {
      */
     public Set<Cell> getAliveCells() {
         return cellAlivenessStates.entrySet().stream()
-                        .filter(Map.Entry::getValue)
-                        .map(Map.Entry::getKey)
-                        .collect(Collectors.toSet());
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
-      
+
     /**
      * Updates the alive/dead status for the given coordinates,
      * then snapshots these states into the persistent map.
@@ -224,14 +223,14 @@ public class Generation {
      * @param aliveness the alive state to assign (true = alive, false = dead)
      */
     public void setState(List<Coord> coords, boolean aliveness) {
-        
+
         for (Coord c : coords) {
             Cell cell = board.getTile(c).getCell();
             cell.setAlive(true);
         }
         this.snapCells();
     }
-    
+
     /**
      * Returns the unique database identifier for this generation snapshot.
      *
@@ -284,11 +283,13 @@ public class Generation {
 
     /**
      * Creates the initial generation (step 0) with coordinate-specified cell types
-     * marked alive, captures their states, and registers the generation in the game.
+     * marked alive, captures their states, and registers the generation in the
+     * game.
      *
-     * @param game          the Game instance to initialize
-     * @param board         the Board context for the new generation
-     * @param cellTypesMap  a map from Coord to CellType indicating which types to create and set alive
+     * @param game         the Game instance to initialize
+     * @param board        the Board context for the new generation
+     * @param cellTypesMap a map from Coord to CellType indicating which types to
+     *                     create and set alive
      * @return a new Generation representing step 0 with the given cell types alive
      * @throws ExtendedGameOfLifeException if game, board, or cellTypesMap is null
      */
@@ -298,7 +299,8 @@ public class Generation {
     }
 
     /**
-     * Retrieves the current energy (lifePoints) values for all cells in this generation.
+     * Retrieves the current energy (lifePoints) values for all cells in this
+     * generation.
      *
      * @return a Map from Cell to its Integer lifePoints value
      */
@@ -310,7 +312,8 @@ public class Generation {
     /**
      * Returns an immutable snapshot of each cell’s alive/dead state.
      *
-     * @return a Map from Cell to Boolean indicating aliveness (true = alive, false = dead)
+     * @return a Map from Cell to Boolean indicating aliveness (true = alive, false
+     *         = dead)
      */
     public Map<Cell, Boolean> getCellAlivenessStates() {
         // TODO: create aliveness states getter
@@ -320,7 +323,8 @@ public class Generation {
     /**
      * Retrieves the current mood of each cell in this generation.
      *
-     * @return a Map from Cell to CellMood representing each cell’s interaction style
+     * @return a Map from Cell to CellMood representing each cell’s interaction
+     *         style
      * @throws UnsupportedOperationException until implemented
      */
     public Map<Cell, CellMood> getMoodStates() {
@@ -331,11 +335,11 @@ public class Generation {
     /**
      * Injects the persistent map of cell aliveness states loaded by Hibernate.
      *
-     * @param cellAlivenessStates a Map from Cell to Boolean indicating each cell’s alive/dead state
+     * @param cellAlivenessStates a Map from Cell to Boolean indicating each cell’s
+     *                            alive/dead state
      */
     public void setCellAlivenessStates(Map<Cell, Boolean> cellAlivenessStates) {
         this.cellAlivenessStates = cellAlivenessStates;
     }
-
 
 }
