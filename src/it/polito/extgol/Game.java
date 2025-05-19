@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -241,7 +242,21 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        // TODO: implement event application logic
+        // TODO:
+        switch(event){
+            case CATACLYSM: cell.setLifePoints(0); break;
+            case FAMINE: cell.setLifePoints(cell.getLifePoints()-1); break;
+            case BLOOM: cell.setLifePoints(cell.getLifePoints()+2); break;
+            case BLOOD_MOON: 
+                if (cell.getMood() == CellMood.VAMPIRE){
+                    List<Cell> neighCells = cell.getNeighbors().stream()
+                                                .map(Tile::getCell).
+                                                filter(c -> c.getMood() != CellMood.VAMPIRE)
+                                                .collect(Collectors.toList());
+                }
+                break;
+            case SANCTUARY: break;
+        }
     }
 
     /**
