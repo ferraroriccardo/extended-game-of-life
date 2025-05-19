@@ -119,7 +119,9 @@ public class Generation {
      */
     public void setType(List<Coord> coords, CellType type) {
 
-        // to be implemented for R1
+        cellAlivenessStates.keySet().stream()
+            .filter( c -> coords.contains(c.getCoordinates()) )
+            .forEach( c -> c.setType(type) );
     }
 
     public EventType getEvent() {

@@ -12,6 +12,6 @@ public interface Interactable {
      *
      * @param other the neighboring Cell involved in the interaction
      */
-    void interact(Cell other);
+    void interact(Cell other) throws CellException;
 
 }

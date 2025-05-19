@@ -2,7 +2,12 @@ package it.polito.extgol;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import com.sun.jdi.event.ThreadStartEvent;
+
+import static it.polito.extgol.CellMood.*;
+import static it.polito.extgol.CellType.*;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
@@ -73,6 +78,22 @@ public class Cell implements Evolvable, Interactable {
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
 
+    //TODO
+    /** Default setting */
+    protected int minThreshold = 2;
+
+    //TODO
+    /** Default setting */
+    protected int maxThreshold = 3;
+
+    //TODO check if it has to be saved
+    /** Default setting as NAIVE */
+    protected CellMood cellMood;
+
+    //TODO check if it has to be saved
+    /** Default setting as NAIVE */
+    protected CellType cellType;
+
     /** Default constructor for JPA compliance. */
     public Cell() {
     }
@@ -85,6 +106,8 @@ public class Cell implements Evolvable, Interactable {
     public Cell(Coord tileCoord) {
         this.cellCoord = tileCoord;
         this.isAlive = false;
+        this.cellMood = NAIVE;
+        this.cellType = BASIC;
     }
 
     /**
@@ -101,6 +124,8 @@ public class Cell implements Evolvable, Interactable {
         this.tile = t;
         this.board = b;
         this.game = g;
+        this.cellMood = NAIVE;
+        this.cellType = BASIC;
     }
 
     /**
@@ -122,11 +147,11 @@ public class Cell implements Evolvable, Interactable {
         Boolean willLive = this.isAlive;
 
         // Overpopulation: more than 3 neighbors kills a live cell
-        if (aliveNeighbors > 3) {
+        if (aliveNeighbors > maxThreshold) {
             willLive = false;
         }
         // Underpopulation: fewer than 2 neighbors kills a live cell
-        else if (aliveNeighbors < 2) {
+        else if (aliveNeighbors < minThreshold) {
             willLive = false;
         }
         // Respawn: exactly 3 neighbors brings a dead cell to life
@@ -256,6 +281,42 @@ public class Cell implements Evolvable, Interactable {
     // EXTENDED BEHAVIORS
 
     /**
+     * Set the new minimum threshold for this specific cell
+     * 
+     * @param value the number of new minimum threshold
+     */
+    public void setMinThreshold(int value) {
+
+        this.minThreshold = value;
+    }
+
+    /**
+     * @return the value of the minimum threshold for this specific cell
+     */
+    public int getMinThreshold() {
+
+        return this.minThreshold;
+    }
+
+    /**
+     * Set the new maximum threshold for this specific cell
+     * 
+     * @param value the number of new maximum threshold
+     */
+    public void setMaxThreshold(int value) {
+
+        this.maxThreshold = value;
+    }
+
+    /**
+     * @return the value of the maximum threshold for this specific cell
+     */
+    public int getMaxThreshold() {
+
+        return this.maxThreshold;
+    }
+    
+    /**
      * Retrieves the current energy level of this cell.
      *
      * @return the number of life points the cell currently has
@@ -270,6 +331,7 @@ public class Cell implements Evolvable, Interactable {
      * @param lifePoints the new number of life points to assign to the cell
      */
     public void setLifePoints(int lifePoints) {
+
         this.lifepoints = lifePoints;
     }
 
@@ -282,8 +344,63 @@ public class Cell implements Evolvable, Interactable {
      * @param cell the Cell object to interact with
      */
     @Override
-    public void interact(Cell otherCell) {
-        // TODO Auto-generated method stub
+    public void interact(Cell otherCell) throws CellException {
+
+        Objects.requireNonNull(otherCell,"Interaction need cells. 'otherCell' cannot be null");
+        
+        CellMood thisType = this.cellMood;
+        CellMood otherType = otherCell.cellMood;
+
+        switch(thisType) {
+            case NAIVE: 
+                switch (otherType) {
+                    case NAIVE:
+                        break;
+                    case HEALER:
+                        this.setLifePoints(this.getLifePoints() + 1);
+                        break;
+                    case VAMPIRE:
+                        otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                        this.setLifePoints(this.getLifePoints() - 1);
+                        this.setMood(VAMPIRE);
+                        break;
+                    default:
+                        throw new CellException("other cell mood not valid");
+                }
+                break;
+            case HEALER: 
+                switch (otherType) {
+                    case NAIVE:
+                        otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                        break;
+                    case HEALER:
+                        break;
+                    case VAMPIRE:
+                        otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                        this.setLifePoints(this.getLifePoints() - 1);
+                        break;
+                    default:
+                        throw new CellException("other cell mood not valid");
+                    }
+                break;
+            case VAMPIRE:
+                    switch (otherType) {
+                        case NAIVE:
+                            otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                            otherCell.setMood(VAMPIRE);
+                            this.setLifePoints(this.getLifePoints() + 1);
+                            break;
+                        case HEALER:
+                            otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                            this.setLifePoints(this.getLifePoints() + 1);
+                            break;
+                        case VAMPIRE:
+                            break;
+                        default:
+                            throw new CellException("other cell mood not valid");
+                    }    
+                break;    
+        }
     }
 
     /**
@@ -292,7 +409,38 @@ public class Cell implements Evolvable, Interactable {
      * @param t the CellType to set (e.g., BASIC, HIGHLANDER, LONER, SOCIAL)
      */
     public void setType(CellType t) {
-        this.type = t;
+
+        Objects.requireNonNull(t,"Cell type null");
+
+        switch(t) {
+            case BASIC:
+                this.cellType = BASIC;
+                break;
+            case HIGHLANDER: 
+                this.cellType = HIGHLANDER;
+                //TODO
+                break;
+            case LONER: 
+                this.cellType = LONER;
+                setMinThreshold(1);
+                break;
+            case SOCIAL: 
+                this.cellType = SOCIAL;
+                setMaxThreshold(8);
+                break;
+            default: 
+                break;
+        }
+    }
+
+    /**
+     * Retrieves the current type of this cell.
+     *
+     * @return the CellType representing the cell’s influencing behavior.
+     */
+    public CellType getType() {
+        
+        return this.cellType;
     }
 
     /**
@@ -301,7 +449,22 @@ public class Cell implements Evolvable, Interactable {
      * @param mood the CellMood to assign (NAIVE, HEALER, or VAMPIRE)
      */
     public void setMood(CellMood mood) {
-        this.mood = mood;
+        
+        Objects.requireNonNull(mood,"Cell mood null");
+
+        switch(mood) {
+            case NAIVE: 
+                this.cellMood = NAIVE;
+                break;
+            case HEALER: 
+                this.cellMood = HEALER;
+                break;
+            case VAMPIRE: 
+                this.cellMood = VAMPIRE;
+                break;
+            default: 
+                break;
+        }
     }
 
     /**
@@ -310,11 +473,7 @@ public class Cell implements Evolvable, Interactable {
      * @return the CellMood representing the cell’s interaction style
      */
     public CellMood getMood() {
-        return this.mood;
+        
+        return this.cellMood;
     }
-
-    public CellType getType() {
-        return type;
-    }
-
 }
