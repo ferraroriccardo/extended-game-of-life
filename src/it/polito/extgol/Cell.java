@@ -273,11 +273,11 @@ public class Cell implements Evolvable, Interactable {
 
     /**
      * Implements the interact() method of Interactable to
-     * definte the interaction between this cell and another cell.
+     * define the interaction between this cell and another cell.
      * Implementations will adjust life points, mood, or other state based on the
      * interaction rules.
      *
-     * @param o the object to interact with
+     * @param cell the Cell object to interact with
      */
     @Override
     public void interact(Cell otherCell) {
