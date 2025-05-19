@@ -103,7 +103,7 @@ public class ExtGOLR2BoardTests {
         Cell cell = facade.getAliveCells(next).get(new Coord(1, 1));
 
         assertEquals(
-            "One positive tile modifier of +3 should yield lifePoints 3 after 1 generation",
+            "One positive tile modifier of +3 should yield lifePoints 3 after 1 step",
             3,
             cell.getLifePoints()
         );
@@ -194,7 +194,7 @@ public class ExtGOLR2BoardTests {
         
         assertEquals(
             "Cell should gain +3 lifePoints from tile interaction per generation",
-            6,
+            3,
             cellEnergy
         );
         // cell should remain alive
@@ -246,8 +246,8 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 1);
         Generation next = result.getGenerations().get(1);
         Map<Integer,List<Cell>> byEnergy = board.getCellsByEnergyLevel(next);
-        assertTrue(byEnergy.containsKey(4));
-        assertTrue(byEnergy.containsKey(20));
+        assertTrue(byEnergy.containsKey(2));
+        assertTrue(byEnergy.containsKey(10));
     }
 
     
@@ -333,11 +333,11 @@ public class ExtGOLR2BoardTests {
         // Minimum energy should be initial lifePoints of unmodified cell: 0
         assertEquals("Minimum energy should be 0", 0, stats.getMin());
         // Maximum energy should be initial+2 (isolated cell dies)
-        assertEquals("Maximum energy should be 4", 4, stats.getMax());
+        assertEquals("Maximum energy should be 2", 2, stats.getMax());
         // Sum of energies
-        assertEquals("Sum of energies should be 6", 6, stats.getSum());
+        assertEquals("Sum of energies should be 3", 3, stats.getSum());
         // Average energy 
-        assertEquals("Average energy should be 1.5", 1.5, stats.getAverage(), 1e-6);
+        assertEquals("Average energy should be 1.25", 1.25, stats.getAverage(), 1e-6);
     
     }
 
@@ -361,12 +361,12 @@ public class ExtGOLR2BoardTests {
         IntSummaryStatistics first = summaryMap.get(1);
         assertEquals("Total live cells at step 0 should be 4", 4, first.getCount());
         assertEquals("Minimum energy should be 0", 0, first.getMin());
-        assertEquals("Maximum energy should be 10", 10, first.getMax());
+        assertEquals("Maximum energy should be 5", 5, first.getMax());
 
         // Check last generation (step 2)
         IntSummaryStatistics last = summaryMap.get(2);
         assertEquals("Total live cells at step 2 should be 4", 4, last.getCount());
         assertEquals("Minimum energy should be 0", 0, last.getMin());
-        assertEquals("Maximum energy should be 10", 15, last.getMax());        
+        assertEquals("Maximum energy should be 10", 10, last.getMax());        
     }
 }

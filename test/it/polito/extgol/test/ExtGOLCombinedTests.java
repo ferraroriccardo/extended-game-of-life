@@ -124,16 +124,16 @@ public class ExtGOLCombinedTests {
         );
         Game result = facade.run(game, 5, Map.of(0, EventType.BLOOM, 3, EventType.CATACLYSM));
 
-        // --- Generation 1: after BLOOM ---
+        // --- Second generation: after BLOOM ---
         Generation secondGeneration = result.getGenerations().get(1);
         Cell c1 = facade.getAliveCells(secondGeneration).get(new Coord(1,1));
         int lp1 = secondGeneration.getEnergyStates().get(c1);
         assertEquals("BLOOM should give +2 LP", 3, lp1);
 
-        // --- Generation 3: after CATACLYSM ---
-        Generation fourthGeneration = result.getGenerations().get(4);
-        Cell c2 = facade.getAliveCells(fourthGeneration).get(new Coord(1,1));
-        int lp2 = fourthGeneration.getEnergyStates().get(c2);
+        // --- Fifth generation: after CATACLYSM ---
+        Generation fifthGeneration = result.getGenerations().get(4);
+        Cell c2 = facade.getAliveCells(fifthGeneration).get(new Coord(1,1));
+        int lp2 = fifthGeneration.getEnergyStates().get(c2);
         assertEquals("CATACLYSM should zero LP", 1, lp2);
     }
 
@@ -150,7 +150,7 @@ public class ExtGOLCombinedTests {
             3, EventType.FAMINE
         ));
 
-        // --- after BLOOM at step 1 ---
+        // --- after BLOOM ---
         Generation secondGeneration = result.getGenerations().get(2);
         Cell bloomCell = facade.getAliveCells(secondGeneration).get(new Coord(1,1));
         int lpAfterBloom = secondGeneration.getEnergyStates().get(bloomCell);
@@ -160,10 +160,10 @@ public class ExtGOLCombinedTests {
         lpAfterBloom
         );
 
-        // --- after FAMINE at step 3 ---
-        Generation fourthGeneration = result.getGenerations().get(4);
-        Cell famineCell = facade.getAliveCells(fourthGeneration).get(new Coord(1,1));
-        int lpAfterFamine = fourthGeneration.getEnergyStates().get(famineCell);
+        // --- after FAMINE ---
+        Generation fifthGeneration = result.getGenerations().get(4);
+        Cell famineCell = facade.getAliveCells(fifthGeneration).get(new Coord(1,1));
+        int lpAfterFamine = fifthGeneration.getEnergyStates().get(famineCell);
         assertEquals(
         "FAMINE should subtract 1 lifePoint from (1,1)",
         7,
