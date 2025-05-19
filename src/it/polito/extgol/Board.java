@@ -36,9 +36,11 @@ import jakarta.persistence.OneToOne;
  * - Factory support for the extended version (interactable tiles, default moods/types)
  * - Analytic operations over generations (e.g., counting, grouping, statistics)
  */
-@Entity
-public class Board {
 
+
+
+ @Entity
+public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -270,8 +272,13 @@ public class Board {
      * @return the count of alive cells in gen
      */
     public Integer countCells(Generation generation) {
-        // TODO: count and return the number of cells where isAlive == true
-        return -1;
+        int count = 0;
+        for (Cell c : generation.getAliveCells()) {
+            if (c != null) {
+                count = count + 1;
+            }
+        }
+        return count;
     }
 
     /**
@@ -282,8 +289,15 @@ public class Board {
      * @return the Cell with maximum lifePoints, or null if no cells are alive
      */
     public Cell getHighestEnergyCell(Generation gen) {
-        // TODO: locate and return the highest-energy cell per the spec
-        return null;
+        int max = 0;
+        Cell Stronger = null;
+        for (Cell c : gen.getAliveCells()) {
+            if (c.getLifePoints() > max) {
+                max = c.getLifePoints();
+                Stronger = c;
+            }
+        }
+        return Stronger;
     }
 
     /**
