@@ -111,9 +111,18 @@ public class ExtendedGameOfLife {
      * @return          The same Game instance, now containing the extended generation history.
      */
     public Game run(Game game, int steps, Map<Integer, EventType> eventMap) {
-        // TODO: implement for R3
-        return null;
+    Generation current = game.getStart();
+    for (int i = 0; i < steps; i++) {
+        final int step = i;
+        if (eventMap.containsKey(step)) {
+            game.getBoard().getCellSet()
+                .forEach(cell -> game.unrollEvent(eventMap.get(step), cell));
+        }
+        Generation next = evolve(current);
+        current = next;
     }
+    return game;
+}
 
     /**
      * Builds and returns a map associating each coordinate with its alive Cell 
