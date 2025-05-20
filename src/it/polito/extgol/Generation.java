@@ -306,8 +306,17 @@ public class Generation {
      * @throws ExtendedGameOfLifeException if game, board, or cellTypesMap is null
      */
     public static Generation createInitial(Game game, Board board, Map<Coord, CellType> cellTypesMap) {
-        // TODO: create specialized factory
-        return null;
+        Objects.requireNonNull(game, "Game cannot be null");
+        Objects.requireNonNull(board, "Board cannot be null");
+        Objects.requireNonNull(cellTypesMap, "cellTypeMap cannot be null");
+
+        game.clearGenerations();
+        Generation init = new Generation(game, board, 0);
+        init.setState((List) cellTypesMap.keySet(), true);
+        board.getTiles().stream().forEach(tile -> tile.getCell().setType(cellTypesMap.get(tile)));
+        init.snapCells();
+        game.addGeneration(init, 0);
+        return init;
     }
 
     /**
@@ -328,8 +337,7 @@ public class Generation {
      *         = dead)
      */
     public Map<Cell, Boolean> getCellAlivenessStates() {
-        // TODO: create aliveness states getter
-        return null;
+        return this.cellAlivenessStates;
     }
 
     /**
@@ -340,8 +348,8 @@ public class Generation {
      * @throws UnsupportedOperationException until implemented
      */
     public Map<Cell, CellMood> getMoodStates() {
-        // TODO: create mood states getter
-        return null;
+        return this.getCellAlivenessStates().keySet().stream()
+        .collect(Collectors.toMap(Function.identity(), Cell::getMood));
     }
 
     /**
