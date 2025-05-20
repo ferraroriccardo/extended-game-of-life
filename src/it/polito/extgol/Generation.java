@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.CollectionTable;
@@ -51,6 +52,9 @@ public class Generation {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
+
+    /* Event scheduled for this generation */
+    private EventType event;
 
     /**
      * Persistent map of each Cell to its alive state at this generation.
@@ -116,6 +120,14 @@ public class Generation {
     public void setType(List<Coord> coords, CellType type) {
 
         // to be implemented for R1
+    }
+
+    public EventType getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventType event) {
+        this.event = event;
     }
 
     /**
@@ -305,8 +317,8 @@ public class Generation {
      * @return a Map from Cell to its Integer lifePoints value
      */
     public Map<Cell, Integer> getEnergyStates() {
-        // TODO: create energy states getter
-        return null;
+        Set<Cell> cells = this.snapCells().keySet();
+        return cells.stream().collect(Collectors.toMap(Function.identity(), Cell::getLifePoints, (v1, v2) -> v1, HashMap::new));
     }
 
     /**
@@ -341,5 +353,4 @@ public class Generation {
     public void setCellAlivenessStates(Map<Cell, Boolean> cellAlivenessStates) {
         this.cellAlivenessStates = cellAlivenessStates;
     }
-
 }
