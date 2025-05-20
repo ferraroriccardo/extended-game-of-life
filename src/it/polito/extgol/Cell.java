@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.sun.jdi.event.ThreadStartEvent;
-
-import static it.polito.extgol.CellMood.*;
-import static it.polito.extgol.CellType.*;
+import static it.polito.extgol.CellMood.HEALER;
+import static it.polito.extgol.CellMood.NAIVE;
+import static it.polito.extgol.CellMood.VAMPIRE;
+import static it.polito.extgol.CellType.BASIC;
+import static it.polito.extgol.CellType.HIGHLANDER;
+import static it.polito.extgol.CellType.LONER;
+import static it.polito.extgol.CellType.SOCIAL;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
@@ -91,8 +94,12 @@ public class Cell implements Evolvable, Interactable {
     protected CellMood cellMood;
 
     //TODO check if it has to be saved
-    /** Default setting as NAIVE */
+    /** Default setting as BASIC */
     protected CellType cellType;
+
+    //TODO check if it has to be saved
+    /** Number of skipped generations */
+    protected int skippedGen = 0;
 
     /** Default constructor for JPA compliance. */
     public Cell() {
@@ -148,11 +155,35 @@ public class Cell implements Evolvable, Interactable {
 
         // Overpopulation: more than 3 neighbors kills a live cell
         if (aliveNeighbors > maxThreshold) {
-            willLive = false;
+            if( this.cellType.equals(HIGHLANDER) ) {
+                if (this.skippedGen < 3) {
+                    willLive = true;
+                    this.skippedGen ++;
+                }
+                else {
+                    this.skippedGen = 0;
+                    willLive = false;
+                }
+            }
+            else {
+                willLive = false;
+            }
         }
         // Underpopulation: fewer than 2 neighbors kills a live cell
         else if (aliveNeighbors < minThreshold) {
-            willLive = false;
+            if( this.cellType.equals(HIGHLANDER) ) {
+                if (this.skippedGen < 3) {
+                    willLive = true;
+                    this.skippedGen ++;
+                }
+                else {
+                    this.skippedGen = 0;
+                    willLive = false;
+                }
+            }
+            else {
+                willLive = false;
+            }
         }
         // Respawn: exactly 3 neighbors brings a dead cell to life
         else if (!this.isAlive && aliveNeighbors == 3) {
@@ -418,7 +449,6 @@ public class Cell implements Evolvable, Interactable {
                 break;
             case HIGHLANDER: 
                 this.cellType = HIGHLANDER;
-                //TODO
                 break;
             case LONER: 
                 this.cellType = LONER;
