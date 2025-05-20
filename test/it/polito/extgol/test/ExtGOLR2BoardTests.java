@@ -337,7 +337,7 @@ public class ExtGOLR2BoardTests {
         // Sum of energies
         assertEquals("Sum of energies should be 3", 3, stats.getSum());
         // Average energy 
-        assertEquals("Average energy should be 1.25", 1.25, stats.getAverage(), 1e-6);
+        assertEquals("Average energy should be 0.75", 0.75, stats.getAverage(), 1e-6);
     
     }
 
