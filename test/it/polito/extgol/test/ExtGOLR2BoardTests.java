@@ -21,9 +21,9 @@ import it.polito.extgol.Generation;
 import it.polito.extgol.Interactable;
 import it.polito.extgol.JPAUtil;
 import it.polito.extgol.Tile;
+import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR2BoardTests {
     private ExtendedGameOfLife facade;
@@ -124,7 +124,7 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 10);
         Generation g2 = result.getGenerations().get(2);
         Cell cell2 = g2.getBoard().getTile(new Coord(1, 1)).getCell();
-        int cellEnergy2 = g2.getEnergies().get(cell2);
+        int cellEnergy2 = g2.getEnergyStates().get(cell2);
 
         assertEquals(
             "Cell should have lifepoints -2 (-2 tile modifier at gen2, and stop interaction after death at gen1)",
@@ -134,7 +134,7 @@ public class ExtGOLR2BoardTests {
 
         Generation g10 = result.getGenerations().get(10);
         Cell cell10 = g10.getBoard().getTile(new Coord(1, 1)).getCell();
-        int cellEnergy10 = g10.getEnergies().get(cell10);
+        int cellEnergy10 = g10.getEnergyStates().get(cell10);
 
         assertEquals(
             "Cell should have lifepoints -2 (-2 tile modifier at gen0, and stop interaction after death at gen1)",
@@ -163,7 +163,7 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 2);
         Generation g2 = result.getGenerations().get(2);
         Cell cell2 = g2.getBoard().getTile(new Coord(1, 1)).getCell();
-        int cellEnergy2 = g2.getEnergies().get(cell2);
+        int cellEnergy2 = g2.getEnergyStates().get(cell2);
 
         assertEquals(
             "Cell should have 0 after neutral tile interaction",
@@ -190,7 +190,7 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 1);
         Generation next = result.getGenerations().get(1);
         Cell cell = facade.getAliveCells(next).get(new Coord(2, 2));
-        int cellEnergy = next.getEnergies().get(cell);
+        int cellEnergy = next.getEnergyStates().get(cell);
         
         assertEquals(
             "Cell should gain +3 lifePoints from tile interaction per generation",
