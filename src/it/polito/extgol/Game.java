@@ -244,32 +244,53 @@ public class Game {
      */
     public void unrollEvent(EventType event, Cell cell) {
         Objects.requireNonNull(event);
-        Objects.requireNonNull(cell);
-
+        Objects.requireNonNull(cell);        
+        
         switch(event){
-            case CATACLYSM: cell.setLifePoints(0); break;
-            case FAMINE: cell.setLifePoints(cell.getLifePoints()-1); break;
-            case BLOOM: cell.setLifePoints(cell.getLifePoints()+2); break;
+            case CATACLYSM: 
+            if (cell.isAlive())
+                cell.setLifePoints(0); 
+            break;
+
+            case FAMINE: 
+            if (cell.isAlive())
+                cell.setLifePoints(cell.getLifePoints()-1);
+            break;
+
+            case BLOOM: 
+            if (cell.isAlive())
+                cell.setLifePoints(cell.getLifePoints()+2); 
+                break;
+
             case BLOOD_MOON: 
                 if (cell.getMood() == CellMood.VAMPIRE){
                     long n = cell.getNeighbors().stream()
-                                                .map(Tile::getCell).
-                                                filter(c -> c.getMood() != CellMood.VAMPIRE)
+                                                .map(Tile::getCell)
+                                                .filter(c -> c.getMood() != CellMood.VAMPIRE)
+                                                .filter(c -> c.isAlive())
                                                 .peek(c -> c.setLifePoints(c.getLifePoints()-1))
                                                 .peek(c -> c.setMood(CellMood.VAMPIRE))
                                                 .collect(Collectors.counting());
-                    cell.setLifePoints(cell.getLifePoints() + (int) n);
+                    if (cell.isAlive)
+                        cell.setLifePoints(cell.getLifePoints() + (int) n);
                 }
                 break;
+
             case SANCTUARY: 
-                if (cell.getMood() == CellMood.HEALER)
+                if (cell.isAlive() && cell.getMood() == CellMood.HEALER)
                     cell.setLifePoints(cell.getLifePoints() + 1);
-                else if (cell.getMood() == CellMood.VAMPIRE)
+                else if (cell.isAlive && cell.getMood() == CellMood.VAMPIRE)
                     cell.setMood(CellMood.NAIVE);
                 break;
+
             default:  //wrong cell mood
-            break;
+                break;
         }
+
+        //TODO: update GameRepository?
+        Generation g = generations.get(generations.size()-1);
+        g.setEvent(event);
+        generations.add(g);
     }
 
     /**
@@ -315,7 +336,12 @@ public class Game {
      */
     public Map<Integer, EventType> getEventMapInternal() {
         // TODO: return the actual event schedule map
-        return new HashMap<>();
+        Map<Integer, EventType> map = new HashMap<>();
+        Integer i=0;
+        for (Generation g : generations){
+            map.put(i, g.getEvent());
+        }
+        return map;
     }
 
     /**
@@ -329,6 +355,11 @@ public class Game {
      */
     public static Map<Integer, EventType> loadEvents(Game game) {
         // TODO: implement repository loading
-        return null; 
+        Map<Integer, EventType> map = new HashMap<>();
+        Integer i=0;
+        for (Generation g : game.getGenerations()){
+            map.put(i, g.getEvent());
+        }
+        return map;
     }
 }
