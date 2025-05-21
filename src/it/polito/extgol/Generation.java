@@ -308,16 +308,37 @@ public class Generation {
      * @throws ExtendedGameOfLifeException if game, board, or cellTypesMap is null
      */
     public static Generation createInitial(Game game, Board board, Map<Coord, CellType> cellTypesMap) {
+        
         Objects.requireNonNull(game, "Game cannot be null");
         Objects.requireNonNull(board, "Board cannot be null");
-        Objects.requireNonNull(cellTypesMap, "cellTypeMap cannot be null");
+        Objects.requireNonNull(cellTypesMap, "cellTypeMaps cannot be null");
 
         game.clearGenerations();
+
         Generation init = new Generation(game, board, 0);
-        init.setState((List) cellTypesMap.keySet(), true);
-        board.getTiles().stream().forEach(tile -> tile.getCell().setType(cellTypesMap.get(tile)));
+        List<Coord> listCood = cellTypesMap.keySet().stream().collect(Collectors.toList());
+        init.setState( listCood, true);
+
+        List<Tile> tiles = board.getTiles();
+
+        for(Tile tile : tiles) {
+            Cell cell = tile.getCell(); 
+            Coord currentCoord = tile.getCoordinates();
+
+            if(cell != null) { 
+                CellType cellType = cellTypesMap.get(currentCoord);
+                if(cellType != null) {
+                    cell.setType(cellType);
+                    cell.setAlive(true);
+                } 
+                else {
+                    cell.setType(CellType.BASIC); 
+                    cell.setAlive(false);
+                }
+            }
+        }
         init.snapCells();
-        game.addGeneration(init, 0);
+        game.addGeneration(init);
         return init;
     }
 
@@ -360,6 +381,7 @@ public class Generation {
      * @param cellAlivenessStates a Map from Cell to Boolean indicating each cell’s
      *                            alive/dead state
      */
+
     public void setCellAlivenessStates(Map<Cell, Boolean> cellAlivenessStates) {
         this.cellAlivenessStates = cellAlivenessStates;
     }

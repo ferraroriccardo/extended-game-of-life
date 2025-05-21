@@ -156,12 +156,12 @@ public class Cell implements Evolvable, Interactable {
         // Overpopulation: more than 3 neighbors kills a live cell
         if (aliveNeighbors > maxThreshold) {
             if( this.cellType.equals(HIGHLANDER) ) {
-                if (this.skippedGen < 3) {
+                if (this.skippedGen < 3 && this.skippedGen != -1) {
                     willLive = true;
                     this.skippedGen ++;
                 }
                 else {
-                    this.skippedGen = 0;
+                    this.skippedGen = -1; 
                     willLive = false;
                 }
             }
@@ -172,12 +172,12 @@ public class Cell implements Evolvable, Interactable {
         // Underpopulation: fewer than 2 neighbors kills a live cell
         else if (aliveNeighbors < minThreshold) {
             if( this.cellType.equals(HIGHLANDER) ) {
-                if (this.skippedGen < 3) {
+                if (this.skippedGen < 3 && this.skippedGen != -1) {
                     willLive = true;
                     this.skippedGen ++;
                 }
                 else {
-                    this.skippedGen = 0;
+                    this.skippedGen = -1;
                     willLive = false;
                 }
             }
@@ -375,7 +375,7 @@ public class Cell implements Evolvable, Interactable {
      * @param cell the Cell object to interact with
      */
     @Override
-    public void interact(Cell otherCell) throws CellException {
+    public void interact(Cell otherCell) {
 
         Objects.requireNonNull(otherCell,"Interaction need cells. 'otherCell' cannot be null");
         
@@ -396,7 +396,6 @@ public class Cell implements Evolvable, Interactable {
                         this.setMood(VAMPIRE);
                         break;
                     default:
-                        throw new CellException("other cell mood not valid");
                 }
                 break;
             case HEALER: 
@@ -411,7 +410,6 @@ public class Cell implements Evolvable, Interactable {
                         this.setLifePoints(this.getLifePoints() - 1);
                         break;
                     default:
-                        throw new CellException("other cell mood not valid");
                     }
                 break;
             case VAMPIRE:
@@ -428,7 +426,6 @@ public class Cell implements Evolvable, Interactable {
                         case VAMPIRE:
                             break;
                         default:
-                            throw new CellException("other cell mood not valid");
                     }    
                 break;    
         }
@@ -449,6 +446,7 @@ public class Cell implements Evolvable, Interactable {
                 break;
             case HIGHLANDER: 
                 this.cellType = HIGHLANDER;
+                this.skippedGen = 0;
                 break;
             case LONER: 
                 this.cellType = LONER;
