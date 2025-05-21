@@ -2,6 +2,7 @@ package it.polito.extgol;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -73,7 +74,6 @@ public class Cell implements Evolvable, Interactable {
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
 
-    private CellType type;
     /** Default constructor for JPA compliance. */
     public Cell() {
     }
@@ -270,7 +270,7 @@ public class Cell implements Evolvable, Interactable {
      *
      * @param lifePoints the new number of life points to assign to the cell
      */
-    public void setLifePoints(int lifePoints) {
+    public void setLifePoints(int lifePoints) { 
         this.lifepoints = lifePoints;
     }
 
@@ -322,10 +322,6 @@ public class Cell implements Evolvable, Interactable {
      */
     public CellMood getMood() {
         return this.mood;
-    }
-
-    public CellType getType() {
-        return type;
     }
 
 }
