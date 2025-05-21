@@ -1,6 +1,7 @@
 package it.polito.extgol;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.AttributeOverride;
@@ -193,6 +194,8 @@ public class Tile implements Interactable{
      * @param lifePointsModifier
      */
     public void setLifePointModifier(Integer lifePointsModifier) {
+        Objects.requireNonNull(lifePointsModifier);
+        
         this.lifePointModifier = lifePointsModifier;
         
     }
@@ -217,6 +220,8 @@ public class Tile implements Interactable{
      *  */    
     @Override
     public void interact(Cell other) {        
+        Objects.requireNonNull(other);
+        
         if (cell.isAlive()) {
             other.lifepoints += getLifePointModifier();
         }

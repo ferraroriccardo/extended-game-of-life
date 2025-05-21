@@ -264,6 +264,10 @@ public class Board {
      * @return the newly created Interactable tile
      */
     public static Interactable setInteractableTile(Board board, Coord coord, Integer lifePointsModifier) {
+        Objects.requireNonNull(board);
+        Objects.requireNonNull(coord);
+        Objects.requireNonNull(lifePointsModifier);
+
         Tile tile = board.getTile(coord); // I find the correct tile
         //Now i set the LP modifier (of the tile!):
         tile.setLifePointModifier(lifePointsModifier);
@@ -277,6 +281,8 @@ public class Board {
      * @return the count of alive cells in gen
      */
     public Integer countCells(Generation generation) {
+        Objects.requireNonNull(generation);
+
         return (int) generation.getAliveCells().stream()
         .count();
     }
@@ -289,6 +295,8 @@ public class Board {
      * @return the Cell with maximum lifePoints, or null if no cells are alive
      */
     public Cell getHighestEnergyCell(Generation gen) {
+        Objects.requireNonNull(gen);
+
         return gen.getAliveCells().stream()
         .max(Comparator.comparing(Cell::getLifePoints)).orElse(null);
     }
@@ -300,6 +308,8 @@ public class Board {
      * @return a Map from lifePoints value to the List of Cells having that energy
      */
     public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen) {
+        Objects.requireNonNull(gen);
+
         return gen.getAliveCells().stream()
         .collect(Collectors.groupingBy(Cell::getLifePoints));
     } 
@@ -311,6 +321,8 @@ public class Board {
      * @return a Map from CellType to the count of alive cells of that type
      */
     public Map<CellType, Integer> countCellsByType(Generation gen) {
+        Objects.requireNonNull(gen);
+
         return gen.getAliveCells().stream()
             .collect(Collectors.groupingBy(Cell :: getType, Collectors.collectingAndThen(
                 Collectors.counting(),
@@ -328,6 +340,7 @@ public class Board {
      */
     public List<Cell> topEnergyCells(Generation gen, int n) { 
         Objects.requireNonNull(gen);
+        
         return gen.getAliveCells().stream()
         .sorted(Comparator.comparing(Cell::getLifePoints).reversed()).limit(n)
         .collect(Collectors.toList());
@@ -340,6 +353,8 @@ public class Board {
      * @return a Map from neighbor count to the List of Cells having that many alive neighbors
      */
     public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen) {
+        Objects.requireNonNull(gen);
+
         return gen.getAliveCells().stream()
         .collect(Collectors.groupingBy(Cell::countAliveNeighbors)); 
     }
@@ -351,6 +366,8 @@ public class Board {
      * @return an IntSummaryStatistics with aggregated lifePoints metrics
      */
     public IntSummaryStatistics energyStatistics(Generation gen) {
+        Objects.requireNonNull(gen);
+
         return gen.getAliveCells().stream()
         .mapToInt(Cell -> gen.getCellLifePoints().get(Cell))  
         .summaryStatistics(); 

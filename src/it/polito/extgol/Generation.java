@@ -363,6 +363,8 @@ public class Generation {
     }
 
     public void setCellLifePoints(Map<Cell, Integer> cellLifePoints) {
+        Objects.requireNonNull(cellLifePoints);
+        
         this.cellLifePoints = cellLifePoints;
     }
 
