@@ -313,4 +313,8 @@ public class Cell implements Evolvable, Interactable {
         return this.mood;
     }
 
+    public CellType getType() {
+        return type;
+    }
+
 }
