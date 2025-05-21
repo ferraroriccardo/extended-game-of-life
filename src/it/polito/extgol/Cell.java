@@ -70,6 +70,7 @@ public class Cell implements Evolvable, Interactable {
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
 
+    private CellType type;
     /** Default constructor for JPA compliance. */
     public Cell() {
     }
@@ -258,8 +259,7 @@ public class Cell implements Evolvable, Interactable {
      * @return the number of life points the cell currently has
      */
     public int getLifePoints() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.lifepoints;
     }
 
     /**
@@ -268,7 +268,7 @@ public class Cell implements Evolvable, Interactable {
      * @param lifePoints the new number of life points to assign to the cell
      */
     public void setLifePoints(int lifePoints) {
-        // TODO Auto-generated method stub
+        this.lifepoints = lifePoints;
     }
 
     /**
@@ -290,9 +290,17 @@ public class Cell implements Evolvable, Interactable {
      * @param t the CellType to set (e.g., BASIC, HIGHLANDER, LONER, SOCIAL)
      */
     public void setType(CellType t) {
-        // TODO Auto-generated method stub
+        type = t;
     }
 
+    /**
+     * Returns the type of the cell
+     * @return type
+     */
+    public CellType getType() {
+        return type;
+    }
+    
     /**
      * Sets the current mood of this cell, impacting how it interacts with others.
      *
