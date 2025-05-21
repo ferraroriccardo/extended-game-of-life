@@ -52,6 +52,9 @@ public class Cell implements Evolvable, Interactable {
     @Column(name = "lifepoints", nullable = false)
     protected Integer lifepoints = 0;
 
+    private CellMood mood;
+    private CellType type;
+
     /** Reference to the parent board (read-only). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "board_id", nullable = false, updatable = false)
@@ -258,8 +261,7 @@ public class Cell implements Evolvable, Interactable {
      * @return the number of life points the cell currently has
      */
     public int getLifePoints() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.lifepoints;
     }
 
     /**
@@ -268,7 +270,7 @@ public class Cell implements Evolvable, Interactable {
      * @param lifePoints the new number of life points to assign to the cell
      */
     public void setLifePoints(int lifePoints) {
-        // TODO Auto-generated method stub
+        this.lifepoints = lifePoints;
     }
 
     /**
@@ -290,7 +292,7 @@ public class Cell implements Evolvable, Interactable {
      * @param t the CellType to set (e.g., BASIC, HIGHLANDER, LONER, SOCIAL)
      */
     public void setType(CellType t) {
-        // TODO Auto-generated method stub
+        this.type = t;
     }
 
     /**
@@ -299,7 +301,7 @@ public class Cell implements Evolvable, Interactable {
      * @param mood the CellMood to assign (NAIVE, HEALER, or VAMPIRE)
      */
     public void setMood(CellMood mood) {
-        // TODO Auto-generated method stub
+        this.mood = mood;
     }
 
     /**
@@ -308,8 +310,7 @@ public class Cell implements Evolvable, Interactable {
      * @return the CellMood representing the cell’s interaction style
      */
     public CellMood getMood() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.mood;
     }
 
 }
