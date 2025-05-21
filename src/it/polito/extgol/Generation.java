@@ -54,6 +54,9 @@ public class Generation {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
+    /* Event scheduled for this generation */
+    private EventType event;
+
     /**
      * Persistent map of each Cell to its alive state at this generation.
      * Keys are Cell entities; values are true for alive, false for dead.
@@ -128,6 +131,14 @@ public class Generation {
     public void setType(List<Coord> coords, CellType type) {
 
         // to be implemented for R1
+    }
+
+    public EventType getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventType event) {
+        this.event = event;
     }
 
     /**
@@ -306,8 +317,17 @@ public class Generation {
      * @throws ExtendedGameOfLifeException if game, board, or cellTypesMap is null
      */
     public static Generation createInitial(Game game, Board board, Map<Coord, CellType> cellTypesMap) {
-        // TODO: create specialized factory
-        return null;
+        Objects.requireNonNull(game, "Game cannot be null");
+        Objects.requireNonNull(board, "Board cannot be null");
+        Objects.requireNonNull(cellTypesMap, "cellTypeMap cannot be null");
+
+        game.clearGenerations();
+        Generation init = new Generation(game, board, 0);
+        init.setState((List) cellTypesMap.keySet(), true);
+        board.getTiles().stream().forEach(tile -> tile.getCell().setType(cellTypesMap.get(tile)));
+        init.snapCells();
+        game.addGeneration(init, 0);
+        return init;
     }
 
     /**
@@ -317,12 +337,8 @@ public class Generation {
      * @return a Map from Cell to its Integer lifePoints value
      */
     public Map<Cell, Integer> getEnergyStates() {
-
-        for (Cell c : cellAlivenessStates.keySet()) {
-            energyStates.put(c, c.getLifePoints());
-        }
-
-        return energyStates;
+        Set<Cell> cells = this.snapCells().keySet();
+        return cells.stream().collect(Collectors.toMap(Function.identity(), Cell::getLifePoints, (v1, v2) -> v1, HashMap::new));
     }
 
     /**
@@ -332,8 +348,7 @@ public class Generation {
      *         = dead)
      */
     public Map<Cell, Boolean> getCellAlivenessStates() {
-        // TODO: create aliveness states getter
-        return null;
+        return this.cellAlivenessStates;
     }
 
     /**
@@ -344,8 +359,8 @@ public class Generation {
      * @throws UnsupportedOperationException until implemented
      */
     public Map<Cell, CellMood> getMoodStates() {
-        // TODO: create mood states getter
-        return null;
+        return this.getCellAlivenessStates().keySet().stream()
+        .collect(Collectors.toMap(Function.identity(), Cell::getMood));
     }
 
     /**

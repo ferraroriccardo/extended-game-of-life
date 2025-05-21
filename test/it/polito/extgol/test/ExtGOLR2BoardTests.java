@@ -21,9 +21,9 @@ import it.polito.extgol.Generation;
 import it.polito.extgol.Interactable;
 import it.polito.extgol.JPAUtil;
 import it.polito.extgol.Tile;
+import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR2BoardTests {
     private ExtendedGameOfLife facade;

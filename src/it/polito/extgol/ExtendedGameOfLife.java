@@ -15,7 +15,7 @@ import jakarta.persistence.EntityTransaction;
  *   - Persist and reload entire game instances.
  */
 public class ExtendedGameOfLife {
-
+    //private GameRepository gameRepository = new GameRepository();
 
     /**
      * Computes and returns the next generation based on the current one.
@@ -72,6 +72,8 @@ public class ExtendedGameOfLife {
         // Step 4: Persist snapshot of the next generation state
         nextGen.snapCells();
 
+        //TODO: do we need this? There already is saveGame().        ???add otherRepositories.update(board, cell...)???
+        //gameRepository.update(game);
         return nextGen;
     }
 
@@ -91,6 +93,7 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
+        //gameRepository.create(game);
         return game;
     }
 
@@ -114,9 +117,19 @@ public class ExtendedGameOfLife {
      * @return          The same Game instance, now containing the extended generation history.
      */
     public Game run(Game game, int steps, Map<Integer, EventType> eventMap) {
-        // TODO: implement for R3
-        return null;
+    Generation current = game.getStart();
+    for (int i = 0; i < steps; i++) {
+        final int step = i;
+        if (eventMap.containsKey(step)) {
+            game.getBoard().getCellSet()
+                .forEach(cell -> game.unrollEvent(eventMap.get(step), cell));
+        }
+        Generation next = evolve(current);
+        current = next;
     }
+    //gameRepository.create(game); //TODO: add otherRepositories.update(board, cell...)
+    return game;
+}
 
     /**
      * Builds and returns a map associating each coordinate with its alive Cell 
@@ -191,8 +204,6 @@ public class ExtendedGameOfLife {
      * @return A Map<Integer, EventType> mapping generation steps to associated events.
      */
     public Map<Integer, EventType> loadEvents() {
-        return null;
+        return null;//gameRepository.findGenerationEventMap();
     }
-
-
 }
