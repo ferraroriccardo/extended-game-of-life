@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -241,7 +243,54 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        // TODO: implement event application logic
+        Objects.requireNonNull(event);
+        Objects.requireNonNull(cell);        
+        
+        switch(event){
+            case CATACLYSM: 
+            if (cell.isAlive())
+                cell.setLifePoints(0); 
+            break;
+
+            case FAMINE: 
+            if (cell.isAlive())
+                cell.setLifePoints(cell.getLifePoints()-1);
+            break;
+
+            case BLOOM: 
+            if (cell.isAlive())
+                cell.setLifePoints(cell.getLifePoints()+2); 
+                break;
+
+            case BLOOD_MOON: 
+                if (cell.getMood() == CellMood.VAMPIRE){
+                    long n = cell.getNeighbors().stream()
+                                                .map(Tile::getCell)
+                                                .filter(c -> c.getMood() != CellMood.VAMPIRE)
+                                                .filter(c -> c.isAlive())
+                                                .peek(c -> c.setLifePoints(c.getLifePoints()-1))
+                                                .peek(c -> c.setMood(CellMood.VAMPIRE))
+                                                .collect(Collectors.counting());
+                    if (cell.isAlive)
+                        cell.setLifePoints(cell.getLifePoints() + (int) n);
+                }
+                break;
+
+            case SANCTUARY: 
+                if (cell.isAlive() && cell.getMood() == CellMood.HEALER)
+                    cell.setLifePoints(cell.getLifePoints() + 1);
+                else if (cell.isAlive && cell.getMood() == CellMood.VAMPIRE)
+                    cell.setMood(CellMood.NAIVE);
+                break;
+
+            default:  //wrong cell mood
+                break;
+        }
+
+        //TODO: update GameRepository?
+        Generation g = generations.get(generations.size()-1);
+        g.setEvent(event);
+        generations.add(g);
     }
 
     /**
@@ -252,7 +301,13 @@ public class Game {
      * @param targetCoordinates the list of coordinates of cells to update
      */
     public void setMood(CellMood mood, List<Coord> targetCoordinates) {
-        // TODO: implement mood assignment for specified cells
+        Objects.requireNonNull(mood);
+        Objects.requireNonNull(targetCoordinates);
+
+        for (Coord c : targetCoordinates){
+            Objects.requireNonNull(c);
+            board.getTile(c).getCell().setMood(mood);
+        }
     }
 
     /**
@@ -263,7 +318,14 @@ public class Game {
      * @param coordinates the list of cell coordinates to update
      */
     public void setMoods(CellMood mood, List<Coord> coordinates) {
-        // TODO: implement moods assignment for specified coordinates
+        // TODO: try to understand the difference between this and the previous method
+        Objects.requireNonNull(mood);
+        Objects.requireNonNull(coordinates);
+
+        for (Coord c : coordinates){
+            Objects.requireNonNull(c);
+            board.getTile(c).getCell().setMood(mood);
+        }
     }
 
     /**
@@ -274,7 +336,12 @@ public class Game {
      */
     public Map<Integer, EventType> getEventMapInternal() {
         // TODO: return the actual event schedule map
-        return new HashMap<>();
+        Map<Integer, EventType> map = new HashMap<>();
+        Integer i=0;
+        for (Generation g : generations){
+            map.put(i, g.getEvent());
+        }
+        return map;
     }
 
     /**
@@ -288,6 +355,11 @@ public class Game {
      */
     public static Map<Integer, EventType> loadEvents(Game game) {
         // TODO: implement repository loading
-        return null; 
+        Map<Integer, EventType> map = new HashMap<>();
+        Integer i=0;
+        for (Generation g : game.getGenerations()){
+            map.put(i, g.getEvent());
+        }
+        return map;
     }
 }
