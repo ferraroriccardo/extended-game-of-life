@@ -15,7 +15,7 @@ import jakarta.persistence.EntityTransaction;
  *   - Persist and reload entire game instances.
  */
 public class ExtendedGameOfLife {
-    //private GameRepository gameRepository = new GameRepository();
+    private Game game;
 
     /**
      * Computes and returns the next generation based on the current one.
@@ -90,7 +90,9 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
-        //gameRepository.create(game);
+        this.game = game;
+        saveGame(game);
+
         return game;
     }
 
@@ -122,9 +124,13 @@ public class ExtendedGameOfLife {
                 .forEach(cell -> game.unrollEvent(eventMap.get(step), cell));
         }
         Generation next = evolve(current);
+        game.addGeneration(next);
         current = next;
     }
-    //gameRepository.create(game); //TODO: add otherRepositories.update(board, cell...)
+    //TODO: add otherRepositories.update(board, cell...)
+    
+    this.game = game;
+    saveGame(game);
     return game;
 }
 
@@ -201,6 +207,6 @@ public class ExtendedGameOfLife {
      * @return A Map<Integer, EventType> mapping generation steps to associated events.
      */
     public Map<Integer, EventType> loadEvents() {
-        return null;//gameRepository.findGenerationEventMap();
+        return Game.loadEvents(this.game);
     }
 }
