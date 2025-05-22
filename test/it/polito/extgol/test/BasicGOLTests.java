@@ -175,10 +175,10 @@ public class BasicGOLTests {
     @Test
     public void testVisualizeEmptyBoard() {
         String viz = board.visualize(game.getStart());
-        String expected =
-                "000\n" +
-                "000\n" +
-                "000";
+        String expected = String.join(System.lineSeparator(),
+                "000",
+                "000",
+                "000");
         assertEquals(expected, viz);
     }
 
@@ -192,11 +192,11 @@ public class BasicGOLTests {
         );
         Generation start = Generation.createInitial(game, board, coords);
         String viz = board.visualize(start);
-        String expected =
-            """
-            000
-            0CC
-            0CC""";
+        String expected = String.join(System.lineSeparator(),
+            "000",   
+            "0CC",   
+            "0CC"    
+        );
         assertEquals(expected, viz);
     }
     
