@@ -16,6 +16,7 @@ import jakarta.persistence.EntityTransaction;
  */
 public class ExtendedGameOfLife {
     private Game game;
+    private Game game;
 
     /**
      * Computes and returns the next generation based on the current one.
@@ -87,6 +88,10 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
+        this.game = game;
+        saveGame(game);
+
+        return game;
         this.game = game;        return game;
     }
 
@@ -198,6 +203,7 @@ public class ExtendedGameOfLife {
      * @return A Map<Integer, EventType> mapping generation steps to associated events.
      */
     public Map<Integer, EventType> loadEvents() {
+        return Game.loadEvents(this.game);
         return Game.loadEvents(this.game);
     }
 }
