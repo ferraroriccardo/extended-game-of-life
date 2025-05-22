@@ -69,14 +69,14 @@ public class ExtGOLR3GameTests {
             List.of(new Coord(1,1), new Coord(1,2), new Coord(2,1), new Coord(2,2))
         );
         
-        // Apply BLOOM at step 0, then evolve one generation
+        // Apply BLOOM at generation 0, then evolve one generation
         Game result = facade.run(game, 1, Map.of(0, EventType.BLOOM));
         Generation gen1 = result.getGenerations().get(1);
 
-        // Pick any alive cell and verify it gained exactly +2 lifePoints
+        // Pick any alive cell and verify it gained exactly +3 lifePoints
         Cell sample = facade.getAliveCells(gen1).get(new Coord(1,1));
         int lp = gen1.getEnergyStates().get(sample);
-        assertEquals("BLOOM should add +2 lifePoints", 2, lp);
+        assertEquals("Survival-maintaining conditions give +1, BLOOM should add +2 lifePoints", 3, lp);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class ExtGOLR3GameTests {
         result.getGenerations().get(1);
 
         int lp = c0.getLifePoints();
-        assertEquals("CATACLYSM should zero out lifePoints", 0, lp);
+        assertEquals("CATACLYSM should zero out lifePoints, and death should remove 1", -1, lp);
     }
 
     @Test
@@ -110,6 +110,6 @@ public class ExtGOLR3GameTests {
         result.getGenerations().get(1);
 
         int lp=c0.getLifePoints();
-        assertEquals("FAMINE should subtract 1 lifePoint", 4, lp);
+        assertEquals("FAMINE should subtract 1 lifePoint, and death another one", 3, lp);
     }
 }

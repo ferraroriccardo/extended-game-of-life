@@ -1,112 +1,113 @@
 # Extended Persistence-Based Conway’s Game of Life
 
----
-
 ## Panoramica
 
-Il sistema modella una versione estesa del [Game of Life (GOL)](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) come una serie di configurazioni di cellule in evoluzione. Il progetto fornisce un’implementazione base del GOL, progettata per essere estesa.
+Il sistema modella una versione estesa del [Game of Life (GOL)](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) come una serie di configurazioni cellulari in evoluzione. Il progetto fornisce un'implementazione base del GOL, e il suo scopo è estenderla.
 
-# Cellule
+# Cell
 
-Nel gioco base fornito, le cellule seguono le regole standard del GOL. L’implementazione estesa arricchisce questo modello introducendo tipi specializzati di cellule con comportamenti metabolici distinti. Alcune cellule possono ritardare la morte in scenari di sotto- o sovrappopolazione, sopravvivendo a più generazioni sotto stress. Altre cellule tollerano condizioni di vicinato differenti, prosperando in isolamento o in ambienti affollati. Inoltre, le cellule scambiano energia con i vicini, rappresentando punti vita o risorse che influenzano la loro evoluzione.
+Nel gioco base fornito, le cell seguono le regole standard del GOL. L'implementazione estesa arricchisce questo modello di base introducendo tipi di cell specializzati con comportamenti metabolici distinti. Alcune cell specializzate tollerano condizioni di vicinato diverse, prosperando in isolamento o in ambienti affollati. Inoltre, le cell scambiano energia con i vicini, rappresentando punti vita o risorse che influenzano la loro evoluzione.
 
 # Board
 
-La board base consiste in una griglia che contiene un insieme di tile, ciascuna delle quali ospita una cellula. Nella versione estesa, la board è composta da tile interattive, in grado di assorbire o donare energia alle cellule. Queste interazioni possono influenzare il comportamento delle cellule, ed è necessario effettuare analisi per valutare le proprietà e gli stati evolutivi della board.
+La board base consiste in una griglia che contiene un insieme di tile, dove ogni tile contiene una cell. Nella sua forma estesa, la board ha tile interattivi, capaci di assorbire o donare energia alle cell. Queste interazioni possono influenzare i comportamenti delle cell, ed è necessario eseguire analisi per valutare le proprietà e gli stati in evoluzione della board.
 
 # Game
 
-Nella versione base, il gioco simula l’evoluzione standard del GOL, gestendo le interazioni tra cellule in base allo stato dei vicini a partire da una configurazione iniziale. Ogni tile contiene una cellula che rimane la stessa per tutta la simulazione, alternando il proprio stato tra viva e morta. L’implementazione estesa introduce eventi globali che influenzano tutte le tile e le cellule della board in generazioni specifiche. Questi eventi, che rappresentano scenari differenti, alterano in modo significativo lo stato della board e le dinamiche cellulari.
+Nella sua versione base, il gioco opera simulando l’evoluzione standard del GOL, gestendo le interazioni tra cell in base agli stati dei vicini a partire da una configurazione iniziale. Tutte le tile contengono una cell che rimane la stessa durante la simulazione, alternando il suo stato tra viva e morta. L’implementazione estesa introduce eventi globali che influenzano tutte le tile e le cell sulla board in generazioni specifiche. Questi eventi, che includono scenari differenti, alterano radicalmente lo stato della board e le dinamiche delle cell. All'inizio di ogni generazione, lo stato di aliveness del vicinato viene calcolato per valutare il prossimo stato di aliveness di ciascuna cell. Sebbene il nuovo stato di aliveness e mood della cell sia applicato solo nella generazione successiva, i cambiamenti ai life points hanno effetto immediato.
 
 # Persistenza
 
-Lo stato del GOL esteso deve essere memorizzato in modo persistente e recuperabile utilizzando `JPA`/`Hibernate` con un database `H2` in-memory. Le entità vengono salvate e possono essere ricaricate successivamente, permettendo l’ispezione o la ripresa della simulazione in una generazione qualsiasi.
+Lo stato del GOL esteso deve essere memorizzato persistentemente e recuperabile utilizzando `JPA`/`Hibernate` con un database in-memory `H2`. Le entità vengono salvate e possono essere ricaricate successivamente, consentendo l'ispezione o la ripresa della simulazione a una generazione specifica.
 
 ---
 
 ## Requisiti Dettagliati
 
-Il progetto Extended GOL fornisce fin dall’inizio un’implementazione base del GOL, che deve essere estesa.
+Il progetto Extended GOL fornisce fin dall'inizio un'implementazione del GOL base da estendere.
 
 ### Codice fornito
 
-Classi del GOL:
+Classi GOL:
 
-- `ExtendedGameOfLife`: classe facade con metodi richiesti per i test implementati come stub.
-- `Cell`: rappresenta una cellula in una generazione.
+- `ExtendedGameOfLife`: classe facade in cui i metodi richiesti per il testing sono lasciati come stub.
+- `Cell`: rappresenta una cell in una generazione.
 - `Tile`: rappresenta una tile sulla board.
-- `Board`: rappresenta una board statica semplice.
+- `Board`: rappresenta una board di gioco semplice e statica.
 - `Game`: definisce il contesto della simulazione.
-- `Generation`: rappresentazione dello stato del gioco.
-- `Interactable` e `Evolvable`: interfacce che alcune entità devono implementare.
-- `CellType`, `CellMood` e `EventType`: enum che includono rispettivamente i tipi previsti di cellule, umori e eventi nel gioco esteso.
-- `Coord`: oggetto valore `JPA` embeddable e hashable che incapsula coordinate intere `(x, y)`, con override corretti di `equals()` e `hashCode()` per l’uso come chiave in mappe e set.
-- `ExtendedGameOfLife`: classe di eccezione personalizzata per il GOL esteso.
+- `Generation`: rappresentazione dello stato di gioco.
+- `Interactable` e `Evolvable`: interfacce da implementare da alcune entità.
+- `CellType`, `CellMood` e `EventType`: `enum` che includono le tipologie previste di tipi cell, mood cell e tipi evento nel gioco esteso.
+- `Coord`: oggetto valore `JPA` embeddable e hashable che incapsula coordinate intere `(x, y)`, con override di `equals()` e `hashCode()` per l'utilizzo come chiave in mappe e set.
+- `ExtendedGameOfLife`: classe di eccezione personalizzata per l'estensione GOL.
 
 - Persistenza:
 
-  - `JPAUtil`: utility singleton per gestire l’`EntityManagerFactory`.
-  - `GenericExtGOLRepository`: repository generico da implementare per ciascuna entità.
+  - `JPAUtil`: utility basata su singleton per gestire l'`EntityManagerFactory`
+  - `GenericExtGOLRepository`: classe di repository generica da implementare per classi repository specifiche.
 
 - Configurazione:
-  - `persistence.xml`: configura Hibernate con database `H2` in-memory.
+  - `persistence.xml`: configura Hibernate con database `H2` in memoria.
   - `pom.xml`: include le dipendenze per `Hibernate ORM`, `JPA`, `H2` e `JUnit 4`.
 
 ---
 
-## R1 Cellule
+## R1 Cell
 
-### Comportamento Base
+### Comportamento base
 
-Nel gioco base, le cellule seguono le regole classiche del GOL:
+Nel gioco base fornito, le cell seguono le regole classiche del GOL:
 
-- **Sopravvivenza:** una cellula viva con due o tre vicine vive sopravvive alla generazione successiva.
-- **Morte per sottopopolazione:** una cellula viva con meno di due vicine vive muore.
-- **Morte per sovrappopolazione:** una cellula viva con più di tre vicine vive muore.
-- **Rinascita:** una cellula morta torna viva quando ha esattamente tre vicine vive.
+- **Sopravvivenza:** una cell viva con due o tre vicini vivi sopravvive alla generazione successiva.
+- **Morte per sottopopolazione:** una cell viva con meno di due vicini vivi muore.
+- **Morte per sovrappopolazione:** una cell viva con più di tre vicini vivi muore.
+- **Rinascita:** una cell morta torna viva quando ha esattamente tre vicini vivi (indipendentemente dal suo `cellType`).
 
-La board è considerata finita: le cellule agli angoli hanno 3 vicini, quelle sui bordi ne hanno 5, quelle centrali 8.
+La board è finita: le cell agli angoli hanno 3 vicini, quelle ai bordi 5, e le cell centrali 8.
 
-Per modellare le interazioni con altre cellule e con l’ambiente, le cellule devono implementare l’interfaccia `Evolvable`. Il progetto fornisce la versione base delle cellule tramite la classe `Cell`, che implementa `Evolvable` e contiene un override del metodo `evolve()` secondo le regole classiche del GOL.
+Per modellare le interazioni con altre cell e con l'ambiente, le cell devono implementare un'interfaccia chiamata `Evolvable`. Il progetto fornisce la versione base delle cell tramite la classe `Cell`, che implementa `Evolvable` e contiene un override del metodo `evolve()` che supporta le regole classiche del GOL.
 
-### Comportamenti Estesi
+### Comportamenti estesi
 
-#### Tipi di Cellule Specializzate
+A ogni generazione, il metodo `evolve()` aggiorna i `lifePoints` della cell in base al vicinato e alle interazioni.
 
-Ogni cellula ha un attributo `lifePoints`, che rappresenta il suo livello energetico. La classe base `Cell` ha questo attributo impostato al valore predefinito `0`.  
-Il GOL esteso implementa tre diversi tipi di cellule come sottoclassi di `Cell`:
+- La morte li decrementa di uno
+- Le condizioni di sopravvivenza li incrementano di uno
+- La rinascita li resetta a 0
 
-- `Highlander`: può sopravvivere per tre generazioni anche in condizioni che normalmente causerebbero la morte secondo le regole del GOL.
-- `Loner`: prospera in isolamento, abbassando la soglia minima di sopravvivenza a **1 sola** vicina.
-- `Social`: alza la soglia massima di sopravvivenza fino a **8** vicine.
+Oltre al rispetto delle regole classiche del GOL, una cell deve avere `lifePoints` maggiori o uguali a 0 per poter essere viva. Tuttavia, le cell in condizioni letali secondo il GOL muoiono anche se hanno livelli energetici positivi. Le cell morte non aggiornano i propri `lifePoints`.
 
-Tutte le cellule hanno un attributo `cellType`, e le cellule base sono marcate come `BASIC`.
+Ogni `Tile` ha un attributo `lifePointModifier`, con valore di default `0`, e implementa l'interfaccia `Interactable`. Le `Tile` possono avere impatti differenti sui `lifePoints` della `Cell`, a seconda del valore di `lifePointModifier`: se positivo aggiungono il valore corrente ai `lifePoints` della cell, se negativo sottraggono, e se zero non hanno effetto. Le interazioni con la tile impattano la cell all'inizio di ogni generazione.
 
-A ogni generazione, il metodo `evolve()` aggiorna i `lifePoints` della cellula in base al vicinato e alle interazioni:
+#### Tipi di cell specializzate
 
-- In caso di morte, diminuisce di 1
-- In caso di sopravvivenza, aumenta di 1
-- In caso di rinascita, viene azzerato a 0
+Ogni cell ha un attributo `lifePoints`, che rappresenta il livello di energia della cell. La classe base `Cell` ha questo attributo impostato al valore di default `0`.  
+Il GOL esteso implementa tre diversi tipi di cell come sottoclassi della classe `Cell`:
 
-Oltre al rispetto delle regole base del GOL, una cellula deve avere `lifePoints` maggiori o uguali a 0 per essere considerata viva. Tuttavia, le cellule che si trovano in condizioni di morte secondo il GOL muoiono comunque anche se hanno `lifePoints` positivi. Le cellule morte non aggiornano i propri punti vita.
+- `Highlander`: può sopravvivere per tre generazioni consecutive in condizioni letali secondo il GOL.
+- `Loner`: prospera in isolamento, spostando la soglia inferiore di sopravvivenza a un solo vicino.
+- `Social`: sposta la soglia superiore di sopravvivenza fino a un massimo di 8 vicini.
+
+Tutte le cell hanno un attributo `cellType`, e le cell base sono marcate come `BASIC`.
 
 #### Vampiri e guaritori
 
-Ogni cellula può trovarsi in uno dei seguenti `mood`: `NAIVE`, `HEALER` oppure `VAMPIRE`. Quando due cellule interagiscono (implementando `Interactable`), il risultato dipende dai rispettivi `mood`:
+Ogni `Cell` può avere tre mood: `NAIVE`, `HEALER`, o `VAMPIRE`. La sequenza delle interazioni delle `Cell` segue un ordine fisso, partendo dall’angolo in alto a sinistra della board e procedendo da sinistra a destra, riga per riga. Le interazioni sono possibili solo tra `Cell` vive. Quando due cell interagiscono, implementando `Interactable`, a seconda dei rispettivi mood, si verificano risultati differenti:
 
-- `HEALER` + `NAIVE`: il `HEALER` dona 1 `lifePoint` al `NAIVE`
-- `HEALER` + `HEALER`: nessun effetto
-- `HEALER` + `VAMPIRE`: il `VAMPIRE` assorbe 1 `lifePoint` dal `HEALER`
-- `VAMPIRE` + `VAMPIRE`: nessun effetto
-- `VAMPIRE` + `NAIVE`: il `VAMPIRE` assorbe 1 `lifePoint` dal `NAIVE` e lo trasforma in un altro `VAMPIRE`
-- `NAIVE` + `NAIVE`: nessun effetto
+- `HEALER` + `NAIVE`: il `HEALER` genera 1 `lifePoint` per il `NAIVE`.
+- `HEALER` + `HEALER`: non succede nulla.
+- `HEALER` + `VAMPIRE`: il `VAMPIRE` assorbe 1 `lifePoint` dal `HEALER`.
+- `VAMPIRE` + `VAMPIRE`: non succede nulla.
+- `VAMPIRE` + `NAIVE`: il `VAMPIRE` assorbe 1 `lifePoint` dal `NAIVE` e lo trasforma in `VAMPIRE`.
+- `NAIVE` + `NAIVE`: non succede nulla.
 
-Tutte le cellule hanno un attributo `cellMood`. Il `mood` può cambiare più volte per una stessa cellula, in base alle interazioni con altre cellule sulla board e agli eventi che si verificano durante il `Game`.
+Un `VAMPIRE` morde un non-vampiro solo se quest’ultimo ha attualmente `lifePoints ≥ 0`. Il morso altera istantaneamente i `lifePoints` del bersaglio, mentre la morte e il cambiamento del mood (cioè la trasformazione in `VAMPIRE`) avvengono come sempre nella generazione successiva.
+
+Tutte le cell hanno un attributo `cellMood`. Il mood può cambiare più volte per la stessa cell, a seconda delle sue interazioni con altre `Cell` sulla `Board` e degli eventi che si verificano durante una `Game`.
 
 #### Persistenza
 
-Tutte le classi derivate da `Cell`, inclusa la classe base, devono essere annotate come entità `JPA`, in modo che l'intera gerarchia possa essere salvata e ricaricata tramite i repository `JPA`.  
-La classe generica `GenericExtGOLRepository<E,I>` deve essere implementata parametrizzandola per `Cell`, al fine di fornire le operazioni CRUD e un metodo `load(...)` che consenta di memorizzare e recuperare lo stato persistente. Esempio:
+Tutte le classi derivate da `Cell`, così come la classe base, devono essere annotate come entità `JPA`, assicurando che l'intera gerarchia delle cell possa essere salvata e caricata tramite i repository `JPA`. La classe di repository generica fornita `GenericExtGOLRepository<E,I>` deve essere implementata parametrizzandola per `Cell` per fornire le operazioni di base e un metodo `load` in modo che lo stato delle cell sia memorizzato persistentemente e recuperabile tramite `JPA`. Per esempio:
 
 ```java
 public class CellRepository  extends GenericExtGOLRepository<Cell, Long> {
@@ -114,38 +115,38 @@ public class CellRepository  extends GenericExtGOLRepository<Cell, Long> {
 }
 ```
 
-Ogni repository deve implementare `load(...)` (e eventuali query personalizzate) affinché lo stato completo della board e del game sia salvabile e ricaricabile tramite `JPA`.
+Ogni repository deve implementare il metodo load(...) (e qualsiasi query personalizzata) in modo che lo stato completo della board e del gioco possa essere salvato e ricaricato tramite JPA.
 
 ---
 
 ## R2 Board
 
-### Comportamenti Base
+### Comportamenti base
 
-La board è una griglia di dimensioni fisse (`M×N`), composta da `M*N` oggetti `Tile`, ognuno con coordinate `x` e `y`, contenente una singola `Cell`.
+La board è una griglia a dimensioni fisse (`M×N`), corrispondente a `M*N` istanze di oggetti `Tile` semplici con coordinate `x` e `y`, ognuna delle quali contiene una singola `Cell`.
 
-### Comportamenti Estesi
+### Comportamenti estesi
 
-#### Tile Interattive
+A ogni generazione, il metodo `evolve()` aggiorna i `lifePoints` della `Cell` in base al suo vicinato e alle interazioni.
 
-Ogni `Tile` ha un attributo `lifePointModifier`, con valore predefinito `0`, e implementa l’interfaccia `Interactable`. Le `Tile` possono modificare i `lifePoints` della cellula contenuta, in base al proprio valore:
+- La morte li decrementa di uno
+- Le condizioni di sopravvivenza li incrementano di uno
+- La rinascita li resetta 0
 
-- Se `> 0`: aggiunge quel valore ai `lifePoints` della cellula
-- Se `< 0`: lo sottrae
-- Se `0`: nessun effetto
+Oltre al rispetto delle regole classiche del GOL, una cell deve avere `lifePoints` maggiori o uguali a 0 per essere viva. Tuttavia, le cell in condizioni di morte secondo il GOL muoiono anche se hanno livelli energetici positivi. Le cell morte non aggiornano i `lifePoints` altrimenti.
 
-Questa interazione avviene all’inizio di ogni generazione.
+Ogni `Tile` ha un valore `lifePointModifier`, di default `0`, e implementa l'interfaccia `Interactable`. Le `Tile` possono avere impatti diversi sui `lifePoints` della `Cell`, a seconda del valore di `lifePointModifier`: se positivo, aggiungono il valore corrente ai `lifePoints` della cell; se negativo, lo sottraggono; se è zero, non hanno effetto. Le interazioni con la tile impattano la cell all'inizio di ogni generazione.
 
 #### Visualizzazione
 
-La board supporta una visualizzazione testuale tramite il metodo `visualize()`. Ogni `Tile` che ospita una cellula morta viene rappresentata con `0`. Le cellule vive vengono rappresentate così:
+La `Board` supporta una visualizzazione basata su stringa tramite il metodo `visualize()`. Ogni `Tile` che ospita una `Cell` morta è rappresentata con uno `0`, mentre le `Cell` vive sono rappresentate con:
 
 - `Cell`: `C`
 - `Highlander`: `H`
 - `Loner`: `L`
 - `Social`: `S`
 
-Esempio:
+Questo metodo produce visualizzazioni nel seguente formato:
 
 ```
 0C00H
@@ -154,24 +155,25 @@ L00CS
 C0000
 ```
 
-### Metodi Analitici
+### Metodi analitici
 
-| Signature metodo                                                                 | Descrizione                                                                                                    |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `public Integer countCells(Generation gen)`                                      | Restituisce il numero **totale** di cellule vive nella generazione `gen`.                                      |
-| `public Cell getHighestEnergyCell(Generation gen)`                               | Restituisce la cellula con il `lifePoints` più alto. In caso di parità, sceglie quella più in alto a sinistra. |
-| `public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen)`          | Raggruppa le **cellule vive** in base al loro `lifePoints` corrente.                                           |
-| `public Map<CellType, Integer> countCellsByType(Generation gen)`                 | Conta le cellule vive per ciascun `CellType`.                                                                  |
-| `public List<Cell> topEnergyCells(Generation gen, int n)`                        | Restituisce le **prime `n`** cellule ordinate per `lifePoints` in ordine decrescente.                          |
-| `public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen)`      | Raggruppa le cellule in base al numero di vicine vive.                                                         |
-| `public IntSummaryStatistics energyStatistics(Generation gen)`                   | Calcola statistiche riassuntive (`count`, `min`, `max`, `sum`, `average`) sui `lifePoints`.                    |
-| `public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int from, int to)` | Restituisce una **serie temporale** delle statistiche energetiche per ogni generazione da `from` a `to`.       |
+La classe `Board` fornisce i seguenti metodi di analisi. Ognuno accetta un'istanza di `Generation` (o un intervallo di generazioni) e restituisce le informazioni richieste:
+
+| Firma del Metodo                                                                         | Descrizione                                                                                                                                     |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public Integer countCells(Generation gen)`                                              | Restituisce il **numero totale** di cell vive in `gen`.                                                                                         |
+| `public Cell getHighestEnergyCell(Generation gen)`                                       | Trova la **singola** cell viva con il maggior numero di `lifePoints`, scegliendo quella più in alto a sinistra in caso di parità.               |
+| `public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen)`                  | Raggruppa le **cell vive** per il loro livello attuale di `lifePoints`.                                                                         |
+| `public Map<CellType, Integer> countCellsByType(Generation gen)`                         | Conta le cell vive **per** `CellType`. Suggerimento: usare query personalizzate nel repository dedicato.                                        |
+| `public List<Cell> topEnergyCells(Generation gen, int n)`                                | Restituisce le **prime `n`** cell vive ordinate per `lifePoints` decrescenti.                                                                   |
+| `public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen)`              | Raggruppa le cell vive per il **numero di vicini vivi**.                                                                                        |
+| `public IntSummaryStatistics energyStatistics(Generation gen)`                           | Calcola statistiche riassuntive (`count`, `min`, `max`, `sum`, `average`) sui `lifePoints` delle cell vive.                                     |
+| `public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int fromStep, int toStep)` | Restituisce una **serie temporale** di statistiche energetiche, calcolate solo per le cell vive, per ogni generazione da `fromStep` a `toStep`. |
 
 #### Persistenza
 
-La configurazione completa della board deve essere persistente: tutte le entità devono essere annotate con ID e mapping JPA appropriati.
-
-La classe `GenericExtGOLRepository<E,I>` deve essere parametrizzata per `Board`, ad esempio:
+La configurazione completa della `Board` deve essere interamente persistente: tutte le entità devono essere annotate con gli opportuni mapping di ID e relazioni.  
+La classe di repository generica `GenericExtGOLRepository<E,I>` fornita deve essere implementata parametrizzandola per `Board`, per fornire le operazioni base e un metodo `load` in modo che lo stato della board, incluse le posizioni e gli stati completi delle `Cell` e delle `Tile`, sia memorizzato e recuperabile tramite `JPA`. Per esempio:
 
 ```java
 public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
@@ -179,43 +181,55 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
 }
 ```
 
-Ogni repository deve implementare `load(...)` (e eventuali query personalizzate) in modo che lo stato completo della board e del gioco sia salvabile e ricaricabile.
-
----
+Ogni repository deve implementare il metodo load(...) (e qualunque query personalizzata) in modo che lo stato completo della board e del gioco possa essere salvato e ricaricato tramite JPA.
 
 ## R3 Game
 
-### Comportamenti Base
+### Comportamenti base
 
-La classe `Game` gestisce l’evoluzione della `Board` attraverso le `Generation`, applicando le regole standard del GOL e i comportamenti base delle cellule.
+La `Game` orchestra l’evoluzione della `Board` attraverso le `Generation` usando le regole standard del GOL e il comportamento base delle cell.  
+Si parte impostando la configurazione iniziale della `Board` e si gestisce l’evoluzione fino al raggiungimento di un numero target di `Generation`. La routine prevede:
 
-L’esecuzione avviene così:
+1. **Rilevamento vicini**: all'inizializzazione, viene analizzata la `Board` per determinare i vicini di ciascuna cell.
+2. **Valutazione del vicinato**: la `Game` fa sì che ogni `Cell` valuti lo stato di aliveness dei suoi vicini alla generazione corrente.
+3. **Evoluzione**: la `Game` imposta il nuovo stato di ogni `Cell` secondo le regole GOL per la generazione successiva, in base alla valutazione del vicinato.
 
-1. **Rilevamento vicini**: inizializzazione dei vicini di ogni cellula sulla board
-2. **Valutazione del vicinato**: ogni cellula valuta lo stato delle vicine nella generazione corrente
-3. **Evoluzione**: ogni cellula applica le regole del GOL e produce il proprio stato per la generazione successiva
+### Comportamenti estesi
 
-### Comportamenti Estesi
+A ogni generazione, il metodo `evolve()` aggiorna i `lifePoints` della `Cell` secondo il vicinato e le interazioni.
+
+- La morte li decrementa di 1
+- Le condizioni di sopravvivenza li incrementano di 1
+- La rinascita li resetta a 0
+
+Oltre alle regole classiche del GOL, una cell deve avere `lifePoints` ≥ 0 per essere considerata viva. Tuttavia, una cell in condizioni letali secondo il GOL muore anche se ha energia positiva. Le cell morte non aggiornano i `lifePoints` in altro modo.
+
+Ogni `Tile` ha un attributo `lifePointModifier` (default: `0`) e implementa l’interfaccia `Interactable`. Le `Tile` influenzano i `lifePoints` della `Cell` come segue:
+
+- Se `lifePointModifier` > 0: aggiungono valore
+- Se < 0: sottraggono
+- Se = 0: nessun effetto
+
+Queste interazioni si applicano all’inizio di ogni generazione.
 
 #### Eventi
 
-Il GOL esteso può attivare eventi globali che influenzano tutte le `Tile` per una singola generazione. Gli eventi possibili sono:
+La `Game` estesa può attivare eventi globali che impostano lo stato di tutte le `Tile` sulla `Board` per una singola `Generation`. Gli eventi disponibili sono:
 
-- **Cataclysm**: tutte le `Tile` azzerano i `lifePoints` delle cellule che contengono
-- **Famine**: tutte le `Tile` assorbono esattamente 1 `lifePoint` dalla cellula
-- **Bloom**: le `Tile` donano esattamente 2 `lifePoints` alla cellula
-- **Blood Moon**: ogni `VAMPIRE` assorbe 1 `lifePoint` da ogni vicino `NAIVE` o `HEALER` e li trasforma in `VAMPIRE`
-- **Sanctuary**: tutte le `Tile` donano 1 `lifePoint` agli `HEALER`, e trasformano i `VAMPIRE` in `NAIVE`
+- `Cataclysm`: tutte le `Tile` azzerano i `lifePoints` della `Cell` che ospitano.
+- `Famine`: tutte le `Tile` assorbono esattamente 1 `lifePoint` dalla `Cell` che ospitano.
+- `Bloom`: tutte le `Tile` danno esattamente 2 `lifePoints` alle `Cell` che ospitano.
+- `Blood Moon`: i `VAMPIRE` ottengono la capacità di trasformare gli `HEALER` in `VAMPIRE` con il loro morso.
+- `Sanctuary`: tutte le `Tile` danno 1 `lifePoint` agli `HEALER`, e tutti i `VAMPIRE` vengono trasformati immediatamente in `NAIVE`.
 
-Ogni evento ha effetto su una singola generazione. Si può verificare al massimo un evento per generazione. Gli eventi si applicano all’inizio della generazione.
+L'evento `Sanctuary` è l'unico caso che prevede un cambiamento di mood istantaneo delle cell, all'inzio della `Generation` prima di ogni interazione delle cell.
+Ogni evento ha effetto solo su una singola generazione. Ogni generazione può contenere al massimo un evento. Gli eventi impattano tutte le `Tile` all’inizio della generazione, influenzando l’evoluzione della `Cell` associata.
 
-### Persistenza
+#### Persistenza
 
-Il sistema di persistenza deve catturare ogni snapshot di `Generation` (layout della board e stato delle cellule), insieme alle entità `Game` associate.
-
-Alla ricarica, il metodo `loadEvents()` è responsabile del collegamento di ogni evento alla sua `Generation`, per permettere la ricostruzione e l’ispezione della cronologia della simulazione.
-
-Esempio:
+Il livello di persistenza deve catturare ogni snapshot di `Generation` (layout della board e stati delle cell) insieme alle relative entità `Game`.  
+Al caricamento, `loadEvents()` è responsabile della query e del riaggancio di ciascun evento alla `Generation` corrispondente nella `Game`, ricostruendo così la timeline completa e permettendo replay o ispezione.  
+La classe generica fornita `GenericExtGOLRepository<E,I>` deve essere implementata parametrizzandola per `Game`, per fornire operazioni base e un metodo `load` in modo che lo stato della `Game`, incluse tutte le sue `Generation` e i relativi eventi, sia persistente e recuperabile tramite `JPA`. Esempio:
 
 ```java
 public class GameRepository  extends GenericExtGOLRepository<Game, Long> {
@@ -223,4 +237,4 @@ public class GameRepository  extends GenericExtGOLRepository<Game, Long> {
 }
 ```
 
-Ogni repository deve implementare `load(...)` (e query personalizzate) per permettere il salvataggio e il recupero completo dello stato del `Game`, incluse tutte le generazioni e i loro eventi.
+Ogni repository deve implementare il metodo load(...) (e qualsiasi query personalizzata) per assicurare che lo stato completo della Board e della Game possa essere salvato e ricaricato tramite JPA.
