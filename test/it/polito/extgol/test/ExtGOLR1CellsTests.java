@@ -262,34 +262,41 @@ public class ExtGOLR1CellsTests {
     @Test
     public void testR1VampireAbsorbsNaiveAndConverts() {
         assumeBranch("R1");
-
-        Cell vampire = new Cell();
-        vampire.setAlive(true);
-        vampire.setMood(CellMood.VAMPIRE);
-        vampire.setLifePoints(1);
-
-        Cell naive = new Cell();
-        naive.setAlive(true);
-        naive.setMood(CellMood.NAIVE);
-        naive.setLifePoints(1);
-
-        vampire.interact(naive);
-
-        assertEquals(
-            "Vampire should absorb 1 lifePoint from Naive",
-            2,
-            vampire.getLifePoints()
+        
+        // Same stable block:
+        Generation init=Generation.createInitial(game, board,
+        List.of(new Coord(1,1), new Coord(1,2),
+                new Coord(2,1), new Coord(2,2))
         );
-        assertEquals(
-            "Naive should lose 1 lifePoint",
-            0,
-            naive.getLifePoints()
-        );
-        assertEquals(
-            "Naive should convert to Vampire",
-            CellMood.VAMPIRE,
-            naive.getMood()
-        );
+
+        // Turn a cell into a Vampire
+        game.setMoods(CellMood.VAMPIRE, List.of(new Coord(1,1)));
+        board.getTile(new Coord(2,1)).getCell().setLifePoints(1);
+        init.snapCells();
+
+        // Run one evolution step
+        Game result = facade.run(game, 1);
+
+        Generation secondGeneration = result.getGenerations().get(1);
+        Map<Cell,Integer> lp1  = secondGeneration.getEnergyStates();
+        Cell vamp1=board.getTile(new Coord(1,1)).getCell();
+
+        // Its neighbors should have turned Vampire
+        Cell ex_naive1=board.getTile(new Coord(1,2)).getCell();
+        assertEquals(CellMood.VAMPIRE, ex_naive1.getMood());
+        assertEquals(0, (int)lp1.get(ex_naive1));
+
+        Cell ex_naive2=board.getTile(new Coord(2,1)).getCell();        
+        assertEquals(CellMood.VAMPIRE, ex_naive2.getMood());
+        assertEquals(1, (int)lp1.get(ex_naive2));
+
+        Cell ex_naive3=board.getTile(new Coord(2,2)).getCell();        
+        assertEquals(CellMood.VAMPIRE, ex_naive3.getMood());
+        assertEquals(0, (int)lp1.get(ex_naive3));
+
+        //vampire has stolen 1 energy from each neighbour
+        int energy=lp1.get(vamp1);
+        assertEquals(4, energy);
     }
     
 }
