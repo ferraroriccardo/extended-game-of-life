@@ -68,9 +68,6 @@ public class ExtendedGameOfLife {
 
         // Step 4: Persist snapshot of the next generation state
         nextGen.snapCells();
-
-        //TODO: do we need this? There already is saveGame().        ???add otherRepositories.update(board, cell...)???
-        //gameRepository.update(game);
         return nextGen;
     }
 
@@ -90,10 +87,7 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
-        this.game = game;
-        saveGame(game);
-
-        return game;
+        this.game = game;        return game;
     }
 
     /**
@@ -127,10 +121,7 @@ public class ExtendedGameOfLife {
         game.addGeneration(next);
         current = next;
     }
-    //TODO: add otherRepositories.update(board, cell...)
-    
     this.game = game;
-    saveGame(game);
     return game;
 }
 
