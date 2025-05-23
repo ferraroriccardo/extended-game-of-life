@@ -88,10 +88,6 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
-        this.game = game;
-        saveGame(game);
-
-        return game;
         this.game = game;        return game;
     }
 
