@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -301,13 +302,7 @@ public class Game {
      * @param targetCoordinates the list of coordinates of cells to update
      */
     public void setMood(CellMood mood, List<Coord> targetCoordinates) {
-        Objects.requireNonNull(mood);
-        Objects.requireNonNull(targetCoordinates);
-
-        for (Coord c : targetCoordinates){
-            Objects.requireNonNull(c);
-            board.getTile(c).getCell().setMood(mood);
-        }
+        setMoods(mood, targetCoordinates);
     }
 
     /**
@@ -335,12 +330,8 @@ public class Game {
      * @return a mutable Map from generation step to EventType
      */
     public Map<Integer, EventType> getEventMapInternal() {
-        // TODO: return the actual event schedule map
         Map<Integer, EventType> map = new HashMap<>();
-        Integer i=0;
-        for (Generation g : generations){
-            map.put(i, g.getEvent());
-        }
+        this.generations.stream().collect(Collectors.toMap(Generation::getStep, Generation::getEvent));
         return map;
     }
 
@@ -354,12 +345,17 @@ public class Game {
      * @return an immutable Map from generation step to EventType
      */
     public static Map<Integer, EventType> loadEvents(Game game) {
-        // TODO: implement repository loading
-        Map<Integer, EventType> map = new HashMap<>();
-        Integer i=0;
-        for (Generation g : game.getGenerations()){
-            map.put(i, g.getEvent());
+    EntityManager em = JPAUtil.getEntityManager();
+    try {
+        Game persistentGame = em.find(Game.class, game.getId());
+        if (persistentGame == null) {
+            throw new IllegalArgumentException("Game with id " + game.getId() + " not found.");
         }
-        return map;
-    }
+        return Map.copyOf(persistentGame.getEventMapInternal());
+    } catch(Exception e) {
+        throw e;
+    } finally {
+        em.close();
+        }
+    }           
 }
