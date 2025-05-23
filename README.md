@@ -8,7 +8,7 @@ The system models an extended version of the [Game of Life (GOL) ](https://en.wi
 
 # Cells
 
-In the provided basic game, cells follow the standard GOL rules. The extended implementation enriches this basic model by introducing specialized cell types with distinct metabolic behaviors. Certain cells can delay death in underpopulation or overpopulation scenarios, surviving multiple generations under stress. Other specialized cells tolerate different neighborhood conditions, thriving either in isolation or in crowded environments. Additionally, cells exchange energy with neighbors, representing life points or resources influencing their evolution.
+In the provided basic game, cells follow the standard GOL rules. The extended implementation enriches this basic model by introducing specialized cell types with distinct metabolic behaviors. Certain specialized cells tolerate different neighborhood conditions, thriving either in isolation or in crowded environments. Additionally, cells exchange energy with neighbors, representing life points or resources influencing their evolution.
 
 # Board
 
@@ -16,7 +16,7 @@ The basic board consists of a grid holding a set of tiles, where each tile holds
 
 # Game
 
-In its basic version, the game operates by simulating the standard GOL evolution, managing cell interactions based on neighbors' states from a given initial configuration. All tiles hold a cell that remains the same along the simulation, toggling its state between alive and dead. The extended implementation introduces global events affecting all tiles and cells across the board at specific generations. These events, which include different scenarios, dramatically alter the board's state and cell dynamics.
+In its basic version, the game operates by simulating the standard GOL evolution, managing cell interactions based on neighbors' states from a given initial configuration. All tiles hold a cell that remains the same along the simulation, toggling its state between alive and dead. The extended implementation introduces global events affecting all tiles and cells across the board at specific generations. These events, which include different scenarios, dramatically alter the board's state and cell dynamics. At the beginning of each generation, aliveness states of the neighborhood is computed to evaluate the next aliveness state of each cell. While the cells new aliveness state and mood is only applied in the next generation, life points changes take effect immediately.
 
 # Persistence
 
@@ -63,7 +63,7 @@ In the provided basic game, cells follow the classical GOL rules:
 - **Survival:** A live cell with two or three alive neighbors lives to the next generation.
 - **Death by underpopulation:** An alive cell with fewer than two alive neighbors dies.
 - **Death by Overpopulation:** An alive cell with more than three alive neighbors dies.
-- **Respawn:** A dead cell turns alive when having exactly three alive neighbors.
+- **Respawn:** A dead cell turns alive when having exactly three alive neighbors (regardless of its extended behavior `cellType`).
 
 The game board is considered to be finite: cells on corners have 3 neighbors, cells on edges have 5 neighbors, and central cells have 8 neighbors.
 
@@ -71,28 +71,30 @@ To model interactions with other cells and the environment, cells must implement
 
 ### Extended Behaviors
 
-#### Specialized Cell Types
-
-Each cell has a `lifePoints` attribute, representing the energy level of the cell. The base `Cell` class has this attribute set to the default value `0`.
-The extended GOL implements three different cell types as derived classes of the `Cell` class:
-
-- `Highlander`: it can survive for three generations in GOL-related death-inducing conditions.
-- `Loner`: Thrives in isolation, moving the lower bound of survival conditions to `1` neighbor only.
-- `Social`: It moves the upper bound of survival conditions up to a maximum of `8` neighbors.
-
-All cells have a `cellType` attribute, and basic cells are marked as `BASIC`.
-
 At each generation, the `evolve()` method updates the cell's `lifePoints` according to its neighborhood and interactions.
 
 - Death decreases it by one
 - Survival-maintaining conditions increase it by one
 - Respawn resets its lifePoints to 0
 
-In addition to the basic GOL rules compliance, a cell needs to have 0 ore more in order to be alive. Yet, cells in death-inducing conditions according to GOL die even if they have positive energy levels. Dead cells do not update lifepoints otherwise.
+In addition to the basic GOL rules compliance, a cell needs to have 0 or more `lifePoints` in order to be alive. Yet, cells in death-inducing conditions according to GOL die even if they have positive energy levels. Dead cells do not update lifepoints otherwise.
+
+Each `Tile` has a `lifePointModifier` attribute value, by default `0`, and implements the `Interactable` interface. `Tile`s can have different impacts on the `Cell`'s `lifePoint`s, depending on the `lifePointModifier` attribute value: if they have a positive `lifePointModifier` they add their current value to the `lifePoints` to the cell, if it is negative they subtract, and if it is zero they have no effect. Interactions with the tile impact the cell at the beginning of each generation.
+
+#### Specialized Cell Types
+
+Each cell has a `lifePoints` attribute, representing the energy level of the cell. The base `Cell` class has this attribute set to the default value `0`.
+The extended GOL implements three different cell types as derived classes of the `Cell` class:
+
+- `Highlander`: it can survive for three consecutive generations in GOL-related death-inducing conditions.
+- `Loner`: Thrives in isolation, moving the lower bound of survival conditions to `1` neighbor only.
+- `Social`: It moves the upper bound of survival conditions up to a maximum of `8` neighbors.
+
+All cells have a `cellType` attribute, and basic cells are marked as `BASIC`.
 
 #### Vampires and healers
 
-Each `Cell` can have three moods: `NAIVE`, `HEALER`, or `VAMPIRE`. When two cells interact, by implementing `Interactable`, depending on their respective mood, different outcomes follow:
+Each `Cell` can have three moods: `NAIVE`, `HEALER`, or `VAMPIRE`. The sequence of `CELL`s interactions follows a fixed order, starting from the top-left corner of the board and proceeding row by row, left to right. Only alive `CELL`s can intereact. When two cells interact, by implementing `Interactable`, depending on their respective mood, different outcomes follow:
 
 - `HEALER` + `NAIVE`: The `HEALER` generates 1 lifePoint for the `NAIVE`.
 - `HEALER` + `HEALER`: Nothing happens.
@@ -100,6 +102,8 @@ Each `Cell` can have three moods: `NAIVE`, `HEALER`, or `VAMPIRE`. When two cell
 - `VAMPIRE` + `VAMPIRE`: Nothing happens.
 - `VAMPIRE` + `NAIVE`: The `VAMPIRE` absorbs 1 lifePoint from the `NAIVE` and turns them into a `VAMPIRE`.
 - `NAIVE` + `NAIVE`: Nothing happens.
+
+A `VAMPIRE` bites a non-vampire only if the target currently has lifepoints ≥ 0. The bite instantly alters the target’s lifepoints, but death and mood change (i.e., transformation into a vampire) still occur, as usual, in the next generation.
 
 All cells have a `cellMood` attribute. The mood can change multiple times for the same cell, depending on its interactions with other `Cell`s on the `Board` and the events that occur during a `Game`.
 
@@ -125,9 +129,15 @@ The board is a grid with fixed dimensions (`M×N`), corresponding to `M*N` insta
 
 ### Extended Behaviors
 
-#### Interactive Tiles
+At each generation, the `evolve()` method updates the cell's `lifePoints` according to its neighborhood and interactions.
 
-On the `Board`, each `Tile` has a `lifePointModifier` attribute value, by default `0`, and implements the `Interactable` interface. `Tile`s can have different impacts on the `Cell`'s `lifePoints`, depending on the `lifePointModifier` attribute value: if they have a positive `lifePointModifier` they adding its current value to the `lifePoints` to the cell, if it is negative they subtract, and if it is zero they have no effect. Interactions with the tile impact the cell at the beginning of each generation.
+- Death decreases it by one
+- Survival-maintaining conditions increase it by one
+- Respawn resets its lifePoints to 0
+
+In addition to the basic GOL rules compliance, a cell needs to have 0 or more `lifePoints` in order to be alive. Yet, cells in death-inducing conditions according to GOL die even if they have positive energy levels. Dead cells do not update lifepoints otherwise.
+
+Each `Tile` has a `lifePointModifier` attribute value, by default `0`, and implements the `Interactable` interface. `Tile`s can have different impacts on the `Cell`'s `lifePoint`s, depending on the `lifePointModifier` attribute value: if they have a positive `lifePointModifier` they add their current value to the `lifePoints` to the cell, if it is negative they subtract, and if it is zero they have no effect. Interactions with the tile impact the cell at the beginning of each generation.
 
 #### Visualization
 
@@ -151,16 +161,16 @@ C0000
 
 The `Board` class provides the following analysis methods. Each accepts a `Generation` instance (or generation range) and returns the requested information:
 
-| Method Signature                                                                         | Description                                                                                                          |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `public Integer countCells(Generation gen)`                                              | Returns the **total number** of alive cells in `gen`.                                                                |
-| `public Cell getHighestEnergyCell(Generation gen)`                                       | Finds the **single** cell with the highest `lifePoints`, picks the one closer to the top left corner in case of tie. |
-| `public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen)`                  | Groups **alive cells** by their current `lifePoints`.                                                                |
-| `public Map<CellType, Integer> countCellsByType(Generation gen)`                         | Counts alive cells **per** `CellType`. Tip: use custom querying in the dedicated repository.                         |
-| `public List<Cell> topEnergyCells(Generation gen, int n)`                                | Returns the **top `n`** cells sorted by descending `lifePoints`.                                                     |
-| `public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen)`              | Groups cells by their **number of live neighbors**.                                                                  |
-| `public IntSummaryStatistics energyStatistics(Generation gen)`                           | Computes summary statistics (`count`, `min`, `max`, `sum`, `average`) over all cells’ `lifePoints`.                  |
-| `public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int fromStep, int toStep)` | Returns a **time series** of energy statistics for each generation step in `[fromStep, toStep]`.                     |
+| Method Signature                                                                         | Description                                                                                                                        |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `public Integer countCells(Generation gen)`                                              | Returns the **total number** of alive cells in `gen`.                                                                              |
+| `public Cell getHighestEnergyCell(Generation gen)`                                       | Finds the **single** alive cell with the highest `lifePoints`, picks the one closer to the top left corner in case of tie.         |
+| `public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen)`                  | Groups **alive cells** by their current `lifePoints`.                                                                              |
+| `public Map<CellType, Integer> countCellsByType(Generation gen)`                         | Counts alive cells **per** `CellType`. Tip: use custom querying in the dedicated repository.                                       |
+| `public List<Cell> topEnergyCells(Generation gen, int n)`                                | Returns the **top `n`** alive cells sorted by descending `lifePoints`.                                                             |
+| `public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen)`              | Groups alive cells by their **number of live neighbors**.                                                                          |
+| `public IntSummaryStatistics energyStatistics(Generation gen)`                           | Computes summary statistics (`count`, `min`, `max`, `sum`, `average`) over all alive cells’ `lifePoints`.                          |
+| `public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int fromStep, int toStep)` | Returns a **time series** of energy statistics, calculated only for alive cells, for each generation step in `[fromStep, toStep]`. |
 
 #### Persistence
 
@@ -173,7 +183,7 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
 }
 ```
 
-## Each repository must implement the `load(...)` method (and any custom queries) so that the board’s and game’s full state can be saved and reloaded via `JPA`.
+Each repository must implement the `load(...)` method (and any custom queries) so that the board’s and game’s full state can be saved and reloaded via `JPA`.
 
 ## R3 Game
 
@@ -184,9 +194,19 @@ This starts with setting the initial `Board` configuration and performing the ga
 
 1. **Neighbor Detection**: At initialization, scan the `Board` to determine each cell's neighbors.
 2. **Neighborhood evaluation**: The `Game` triggers every `Cell` to evaluate the aliveness states of its neighbors at the current `Generation`.
-3. **Evolution**: The `Game` sets the new state according to GOL rules of each `Cell`for the next `Generation` following the neighborhood evaluation.
+3. **Evolution**: The `Game` sets the new state of each `Cell` according to GOL rules of each `Cell`for the next `Generation` following the neighborhood evaluation.
 
 ### Extended Behaviors
+
+At each generation, the `evolve()` method updates the cell's `lifePoints` according to its neighborhood and interactions.
+
+- Death decreases it by one
+- Survival-maintaining conditions increase it by one
+- Respawn resets its lifePoints to 0
+
+In addition to the basic GOL rules compliance, a cell needs to have 0 or more `lifePoints` in order to be alive. Yet, cells in death-inducing conditions according to GOL die even if they have positive energy levels. Dead cells do not update lifepoints otherwise.
+
+Each `Tile` has a `lifePointModifier` attribute value, by default `0`, and implements the `Interactable` interface. `Tile`s can have different impacts on the `Cell`'s `lifePoint`s, depending on the `lifePointModifier` attribute value: if they have a positive `lifePointModifier` they add their current value to the `lifePoints` to the cell, if it is negative they subtract, and if it is zero they have no effect. Interactions with the tile impact the cell at the beginning of each generation.
 
 #### Events
 
@@ -195,10 +215,11 @@ The extended `Game` can trigger global events setting the state of all `Tile`s o
 - **Cataclysm**: all `Tile`s reset all `lifePoints` from the `Cell` they hold to `0`.
 - **Famine**: all `Tile`s absorb exactly `1` `lifePoints` from the `Cell` they hold.
 - **Bloom**: `Tile`s grant exactly `2` `lifePoints` to the cells sitting on them.
-- **Blood Moon**: every `VAMPIRE` seated on a `Tile` automatically absorbs `1` `lifePoints` from each adjacent `NAIVE` or `HEALER` and turns them into new `VAMPIRE`s.
-- **Sanctuary**: all tiles grant each `HEALER` `1` `lifePoints`, while blocking all `VAMPIRE`s by turning them `NAIVE`.
+- **Blood Moon**: `VAMPIRE`s gain the ability to turn healers into `VAMPIRE`s with their bite.
+- **Sanctuary**: all `Tile`s grant each `HEALER` `1` `lifePoints`, all `VAMPIRE`s are immediately turned into `NAIVE`.
 
-Each event impacts a single generation. Each generation includes at most one event. Events impact all cells on the board at the beginning of each generation.
+The **Sanctuary** event is the only case that causes an immediate mood change in cells, at the beginning of the `Generation`, before any cell interaction takes place.
+Each event impacts a single generation. Each generation includes at most one event. Events impact all `TILE`s on the board at the beginning of each generation, affecting the evolution of its associated `CELL` into the next.
 
 #### Persistence
 

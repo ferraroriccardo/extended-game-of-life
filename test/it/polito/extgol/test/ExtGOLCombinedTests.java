@@ -39,7 +39,7 @@ public class ExtGOLCombinedTests {
     public void setUp() {
         clearDatabase();
         facade = new ExtendedGameOfLife();
-        game  = Game.create("TestGame", 3, 3);
+        game  = Game.createExtended("TestGame", 5, 4);
         board = game.getBoard();
     }
 
@@ -151,9 +151,9 @@ public class ExtGOLCombinedTests {
         ));
 
         // --- after BLOOM ---
-        Generation secondGeneration = result.getGenerations().get(2);
-        Cell bloomCell = facade.getAliveCells(secondGeneration).get(new Coord(1,1));
-        int lpAfterBloom = secondGeneration.getEnergyStates().get(bloomCell);
+        Generation thirdGeneration = result.getGenerations().get(2);
+        Cell bloomCell = facade.getAliveCells(thirdGeneration).get(new Coord(1,1));
+        int lpAfterBloom = thirdGeneration.getEnergyStates().get(bloomCell);
         assertEquals(
         "BLOOM should give +2 lifePoints to (1,1)",
         4,
@@ -166,7 +166,7 @@ public class ExtGOLCombinedTests {
         int lpAfterFamine = fifthGeneration.getEnergyStates().get(famineCell);
         assertEquals(
         "FAMINE should subtract 1 lifePoint from (1,1)",
-        7,
+        5,
         lpAfterFamine
         );
     }
@@ -177,12 +177,13 @@ public class ExtGOLCombinedTests {
         // Same stable block:
         Generation init=Generation.createInitial(game, board,
         List.of(new Coord(1,1), new Coord(1,2),
-                new Coord(2,1), new Coord(2,2))
+                new Coord(2,1), new Coord(2,2),
+                new Coord(2,3))
         );
         // Turn a cell into a Vampire
         game.setMoods(CellMood.VAMPIRE, List.of(new Coord(1,1)));
         init.snapCells();
-        // BLOOD_MOON at step 0
+        // BLOOD_MOON at step 1
         Game result = facade.run(game, 1, Map.of(0, EventType.BLOOD_MOON));
 
         Generation secondGeneration = result.getGenerations().get(1);
@@ -192,14 +193,13 @@ public class ExtGOLCombinedTests {
         int energy=lp1.get(vamp1);
         assertEquals(4, energy);
 
-        // Its two neighbors (2,1) and (1,2) should have turned Vampire
-        assertEquals(CellMood.VAMPIRE, vamp1.getMood());
-        Cell naive1=board.getTile(new Coord(0,1)).getCell();
-        Cell naive2=board.getTile(new Coord(1,0)).getCell();
-
-        // Far‐away (2,2) remains Naive with 0 LP
+        // Its neighbors should have turned Vampire
+        Cell naive1=board.getTile(new Coord(1,2)).getCell();
+        assertEquals(CellMood.VAMPIRE, naive1.getMood());
+        
+        // Far‐away (2,3) remains Naive with 0 LP
+        Cell naive2=board.getTile(new Coord(2,3)).getCell();        
         assertEquals(CellMood.NAIVE, naive2.getMood());
-        assertEquals(CellMood.NAIVE, naive1.getMood());
     }
 
     @Test
