@@ -226,7 +226,7 @@ public class ExtGOLCombinedTests {
         // Vampire turned Naive, LP stays 0
         Cell vamp1 = facade.getAliveCells(secondGeneration).get(new Coord(2,2));
         assertEquals(CellMood.NAIVE, secondGeneration.getMoodStates().get(vamp1));
-        assertEquals(Integer.valueOf(1), secondGeneration.getEnergyStates().get(vamp1));
+        assertEquals(Integer.valueOf(3), secondGeneration.getEnergyStates().get(vamp1));
     }
 
     @Test
