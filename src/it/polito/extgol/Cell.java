@@ -158,15 +158,18 @@ public class Cell implements Evolvable, Interactable {
             if( this.cellType.equals(HIGHLANDER) ) {
                 if (this.skippedGen < 3 && this.skippedGen != -1) {
                     willLive = true;
+                    setLifePoints(this.getLifePoints() + 1);
                     this.skippedGen ++;
                 }
                 else {
                     this.skippedGen = -1; 
                     willLive = false;
+                    setLifePoints(this.getLifePoints() - 1);
                 }
             }
             else {
                 willLive = false;
+                setLifePoints(this.getLifePoints() - 1);
             }
         }
         // Underpopulation: fewer than 2 neighbors kills a live cell
@@ -174,19 +177,23 @@ public class Cell implements Evolvable, Interactable {
             if( this.cellType.equals(HIGHLANDER) ) {
                 if (this.skippedGen < 3 && this.skippedGen != -1) {
                     willLive = true;
+                    setLifePoints(this.getLifePoints() + 1);
                     this.skippedGen ++;
                 }
                 else {
                     this.skippedGen = -1;
                     willLive = false;
+                    setLifePoints(this.getLifePoints() - 1);
                 }
             }
             else {
                 willLive = false;
+                setLifePoints(this.getLifePoints() - 1);
             }
         }
         // Respawn: exactly 3 neighbors brings a dead cell to life
         else if (!this.isAlive && aliveNeighbors == 3) {
+            setLifePoints(0);
             willLive = true;
         }
         // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
