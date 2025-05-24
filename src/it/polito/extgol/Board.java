@@ -246,7 +246,7 @@ public class Board {
             }
             // use height here so you don't append a newline after the last row
             if (y < height - 1) {
-                sb.append('\n');
+                sb.append(System.lineSeparator());
             }
         }
         return sb.toString();
