@@ -310,7 +310,7 @@ public class Cell implements Evolvable, Interactable {
      * @return type
      */
     public CellType getType() {
-        return type;
+        return this.type;
     }
     
     /**
