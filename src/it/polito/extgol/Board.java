@@ -1,12 +1,15 @@
 package it.polito.extgol;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,9 +39,11 @@ import jakarta.persistence.OneToOne;
  * - Factory support for the extended version (interactable tiles, default moods/types)
  * - Analytic operations over generations (e.g., counting, grouping, statistics)
  */
-@Entity
-public class Board {
 
+
+
+ @Entity
+public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -259,8 +264,14 @@ public class Board {
      * @return the newly created Interactable tile
      */
     public static Interactable setInteractableTile(Board board, Coord coord, Integer lifePointsModifier) {
-        // TODO: implement setting an Interactable tile in the board's tiles map
-        return null;
+        Objects.requireNonNull(board);
+        Objects.requireNonNull(coord);
+        Objects.requireNonNull(lifePointsModifier);
+
+        Tile tile = board.getTile(coord); // I find the correct tile
+        //Now i set the LP modifier (of the tile!):
+        tile.setLifePointModifier(lifePointsModifier);
+        return tile;
     }
 
     /**
@@ -270,8 +281,10 @@ public class Board {
      * @return the count of alive cells in gen
      */
     public Integer countCells(Generation generation) {
-        // TODO: count and return the number of cells where isAlive == true
-        return -1;
+        Objects.requireNonNull(generation);
+
+        return (int) generation.getAliveCells().stream()
+        .count();
     }
 
     /**
@@ -282,8 +295,11 @@ public class Board {
      * @return the Cell with maximum lifePoints, or null if no cells are alive
      */
     public Cell getHighestEnergyCell(Generation gen) {
-        // TODO: locate and return the highest-energy cell per the spec
-        return null;
+        Objects.requireNonNull(gen);
+
+        return gen.getAliveCells().stream()
+        .max(Comparator.comparing(Cell::getLifePoints).thenComparing(Cell::getY).thenComparing(Cell::getX))
+        .orElse(null);
     }
 
     /**
@@ -293,10 +309,12 @@ public class Board {
      * @return a Map from lifePoints value to the List of Cells having that energy
      */
     public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen) {
-        // TODO: build and return grouping of alive cells by lifePoints
-        return null;
-    }
+        Objects.requireNonNull(gen);
 
+        return gen.getAliveCells().stream()
+        .collect(Collectors.groupingBy(Cell::getLifePoints));
+    } 
+  
     /**
      * Counts alive cells per CellType in the given generation.
      *
@@ -304,8 +322,14 @@ public class Board {
      * @return a Map from CellType to the count of alive cells of that type
      */
     public Map<CellType, Integer> countCellsByType(Generation gen) {
-        // TODO: query or iterate to count alive cells by CellType
-        return null;
+        Objects.requireNonNull(gen);
+
+        return gen.getAliveCells().stream()
+            .collect(Collectors.groupingBy(Cell :: getType, Collectors.collectingAndThen(
+                Collectors.counting(),
+                Long::intValue)));
+        
+
     }
 
     /**
@@ -315,9 +339,12 @@ public class Board {
      * @param n   the number of top-energy cells to return
      * @return a List of the top n Cells by lifePoints, in descending order
      */
-    public List<Cell> topEnergyCells(Generation gen, int n) {
-        // TODO: sort alive cells by lifePoints and return the first n
-        return null;
+    public List<Cell> topEnergyCells(Generation gen, int n) { 
+        Objects.requireNonNull(gen);
+        
+        return gen.getAliveCells().stream()
+        .sorted(Comparator.comparing(Cell::getLifePoints).reversed()).limit(n)
+        .collect(Collectors.toList());
     }
 
     /**
@@ -327,8 +354,10 @@ public class Board {
      * @return a Map from neighbor count to the List of Cells having that many alive neighbors
      */
     public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen) {
-        // TODO: group alive cells based on countAliveNeighbors()
-        return null;
+        Objects.requireNonNull(gen);
+
+        return gen.getAliveCells().stream()
+        .collect(Collectors.groupingBy(Cell::countAliveNeighbors)); 
     }
 
     /**
@@ -338,9 +367,12 @@ public class Board {
      * @return an IntSummaryStatistics with aggregated lifePoints metrics
      */
     public IntSummaryStatistics energyStatistics(Generation gen) {
-        // TODO: collect lifePoints of all alive cells into an IntSummaryStatistics
-        return null;
-    }
+        Objects.requireNonNull(gen);
+
+        return gen.getAliveCells().stream()
+        .mapToInt(Cell -> gen.getCellLifePoints().get(Cell))  
+        .summaryStatistics(); 
+        }
 
     /**
      * Returns a time series of energy statistics for each generation step in [fromStep, toStep].
@@ -350,7 +382,7 @@ public class Board {
      * @return a Map from generation step index to its IntSummaryStatistics
      */
     public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int fromStep, int toStep) {
-        // TODO: iterate generations in range and compute energyStatistics for each
-        return null;
+        return IntStream.rangeClosed(fromStep, toStep).boxed() 
+        .collect(Collectors.toMap(step -> step, step -> energyStatistics(game.getGenerations().get(step)))); 
     }
 }
