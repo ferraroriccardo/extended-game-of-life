@@ -298,7 +298,8 @@ public class Board {
         Objects.requireNonNull(gen);
 
         return gen.getAliveCells().stream()
-        .max(Comparator.comparing(Cell::getLifePoints)).orElse(null);
+        .max(Comparator.comparing(Cell::getLifePoints).thenComparing(Cell::getY).thenComparing(Cell::getX))
+        .orElse(null);
     }
 
     /**
