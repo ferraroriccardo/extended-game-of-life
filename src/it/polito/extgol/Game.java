@@ -313,7 +313,6 @@ public class Game {
      * @param coordinates the list of cell coordinates to update
      */
     public void setMoods(CellMood mood, List<Coord> coordinates) {
-        // TODO: try to understand the difference between this and the previous method
         Objects.requireNonNull(mood);
         Objects.requireNonNull(coordinates);
 
