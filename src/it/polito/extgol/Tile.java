@@ -1,6 +1,7 @@
 package it.polito.extgol;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.AttributeOverride;
@@ -23,7 +24,7 @@ import jakarta.persistence.Transient;
  * Holds coordinate position, occupying Cell, and link back to its Board.
  */
 @Entity
-public class Tile {
+public class Tile implements Interactable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,6 +65,7 @@ public class Tile {
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
 
+    private Integer lifePointModifier = 0;
     /**
      * Default constructor required by JPA.
      */
@@ -184,6 +186,21 @@ public class Tile {
 
     // EXTENDED BEHAVIORS
     
+    
+
+
+    /**
+     * Associates a tile with a LP modifier
+     * @param lifePointsModifier
+     */
+    public void setLifePointModifier(Integer lifePointsModifier) {
+        Objects.requireNonNull(lifePointsModifier);
+        
+        this.lifePointModifier = lifePointsModifier;
+        
+    }
+    
+    
     /**
      * Retrieves the life point modifier that this tile applies to any cell occupying it.
      * 
@@ -193,8 +210,23 @@ public class Tile {
      * @return the integer modifier to a cell’s lifePoints when evolving
      */
     public Integer getLifePointModifier() {
-        // TODO Auto-generated method stub
-        return 0;
+        return lifePointModifier;
+    }
+
+
+    /**
+     * Upgrades or downgrades the LP of the cell based on the tile LP modifier
+     * 
+     *  */    
+    @Override
+    public void interact(Cell other) {        
+        Objects.requireNonNull(other);
+        
+        if (cell.isAlive()) {
+            other.lifepoints += getLifePointModifier();
+        }
+    
+        
     }
 
 }
