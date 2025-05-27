@@ -261,7 +261,7 @@ public class Game {
             case BLOOM: 
             if (cell.isAlive())
                 cell.setLifePoints(cell.getLifePoints()+2); 
-                break;
+            break;
 
             case BLOOD_MOON: 
                 if (cell.getMood() == CellMood.VAMPIRE){
