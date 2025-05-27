@@ -290,7 +290,7 @@ public class Game {
 
         //TODO: update GameRepository?
         Generation g = generations.get(generations.size()-1);
-        g.setEvent(event);
+        g.setEvent(event);   //TODO: check duplicated setEvent(), here g.event was already set to the correct event
         generations.add(g);
     }
 
