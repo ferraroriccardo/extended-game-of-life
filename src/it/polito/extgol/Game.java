@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FetchType;
@@ -14,6 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderColumn;
@@ -70,13 +72,11 @@ public class Game {
     @OrderColumn(name = "generation_index")
     private List<Generation> generations = new ArrayList<>();
     
-    @OneToMany(cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY)
-    @OrderColumn(name = "eventMapInternal")
-    private Map<Integer, EventType> eventMapInternal;
+    @ElementCollection
+    @MapKeyColumn(name = "generation_id")
+    private Map<Integer, EventType> eventMapInternal = new java.util.HashMap<>();
 
-    /**
+    /** 
      * Default constructor for JPA.
      */
     protected Game() {
