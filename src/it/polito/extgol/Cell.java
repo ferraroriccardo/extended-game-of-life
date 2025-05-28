@@ -125,7 +125,6 @@ public class Cell implements Evolvable, Interactable {
         // Overpopulation: more than 3 neighbors kills a live cell
         if (aliveNeighbors > 3) {
             willLive = false;
-            
         }
         // Underpopulation: fewer than 2 neighbors kills a live cell
         else if (aliveNeighbors < 2) {
@@ -139,11 +138,9 @@ public class Cell implements Evolvable, Interactable {
         // remains true
         else
             this.setLifePoints(this.getLifePoints()+1);
-
-        //if the Cell will die and it was alive: -1
-        if (this.isAlive() && !willLive) {
-            this.setLifePoints(this.getLifePoints() - 1);
-        }            
+            
+        if (this.isAlive && !willLive)
+            this.setLifePoints(this.getLifePoints() - 1);         
         return willLive;
     }
 
