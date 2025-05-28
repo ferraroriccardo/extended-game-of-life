@@ -127,6 +127,7 @@ public class Cell implements Evolvable, Interactable {
      * @param coord the cell's coordinates
      */
     public Cell(Coord tileCoord) {
+        Objects.requireNonNull(tileCoord);
         this.cellCoord = tileCoord;
         this.isAlive = false;
         this.cellMood = NAIVE;
@@ -144,6 +145,10 @@ public class Cell implements Evolvable, Interactable {
      * @param game  the owning Game
      */
     public Cell(Coord tileCoord, Tile t, Board b, Game g) {
+        Objects.requireNonNull(tileCoord);
+        Objects.requireNonNull(t);
+        Objects.requireNonNull(b);
+        Objects.requireNonNull(g);
         this.cellCoord = tileCoord;
         this.isAlive = false;
         this.tile = t;
@@ -246,6 +251,7 @@ public class Cell implements Evolvable, Interactable {
      * @param gen the Generation instance to associate with this cell
      */
     void addGeneration(Generation gen) {
+        Objects.requireNonNull(gen);
         generations.add(gen);
     }
 
@@ -358,7 +364,7 @@ public class Cell implements Evolvable, Interactable {
      * @param lifePoints the new number of life points to assign to the cell
      */
     public void setLifePoints(int lifePoints) {
-
+        
         this.lifepoints = lifePoints;
     }
 
@@ -437,6 +443,7 @@ public class Cell implements Evolvable, Interactable {
 
     public void setFutureMood(CellMood futureMood) {
 
+        Objects.requireNonNull(futureMood);
         this.futureMood = futureMood;
     }
 
@@ -536,6 +543,7 @@ public class Cell implements Evolvable, Interactable {
     }
 
     public void addBite(Coord coord) {
+        Objects.requireNonNull(coord);
         this.vampBite.add(coord);
     }
 
