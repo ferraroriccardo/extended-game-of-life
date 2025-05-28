@@ -1,9 +1,17 @@
 package it.polito.extgol;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import static it.polito.extgol.CellMood.HEALER;
+import static it.polito.extgol.CellMood.NAIVE;
+import static it.polito.extgol.CellMood.VAMPIRE;
+import static it.polito.extgol.CellType.BASIC;
+import static it.polito.extgol.CellType.HIGHLANDER;
+import static it.polito.extgol.CellType.LONER;
+import static it.polito.extgol.CellType.SOCIAL;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
@@ -53,9 +61,6 @@ public class Cell implements Evolvable, Interactable {
     @Column(name = "lifepoints", nullable = false)
     protected Integer lifepoints = 0;
 
-    private CellMood mood;
-    private CellType type;
-
     /** Reference to the parent board (read-only). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "board_id", nullable = false, updatable = false)
@@ -74,8 +79,46 @@ public class Cell implements Evolvable, Interactable {
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
 
+    //TODO
+    /** Default setting */
+    protected int minThreshold = 2;
+
+    //TODO
+    /** Default setting */
+    protected int maxThreshold = 3;
+
+    //TODO check if it has to be saved
+    /** Default setting as NAIVE */
+    protected CellMood cellMood;
+
+    //TODO check if it has to be saved
+    /** Default setting as BASIC */
+    protected CellType cellType;
+
+    //TODO check if it has to be saved
+    /** Number of skipped generations */
+    protected int skippedGen = 0;
+
+    //TODO 
+    /** Future mood */
+    protected CellMood futureMood = NAIVE;
+
+    //TODO 
+    /** Flag to check <0 lifepoints */
+    protected boolean willdie = false;
+
+    //TODO 
+    /** Cells that have bite this Cell */
+    @Transient
+    protected List<Coord> vampBite = null;
+
     /** Default constructor for JPA compliance. */
     public Cell() {
+        this.cellMood = NAIVE;
+        this.cellType = BASIC;
+        this.vampBite = new ArrayList<>();
+        // just to not have getBiteList null
+        this.addBite(new Coord(-1,-1));
     }
 
     /**
@@ -84,8 +127,13 @@ public class Cell implements Evolvable, Interactable {
      * @param coord the cell's coordinates
      */
     public Cell(Coord tileCoord) {
+        Objects.requireNonNull(tileCoord);
         this.cellCoord = tileCoord;
         this.isAlive = false;
+        this.cellMood = NAIVE;
+        this.cellType = BASIC;
+        this.vampBite = new ArrayList<>();
+        this.addBite(new Coord(-1,-1));
     }
 
     /**
@@ -97,11 +145,19 @@ public class Cell implements Evolvable, Interactable {
      * @param game  the owning Game
      */
     public Cell(Coord tileCoord, Tile t, Board b, Game g) {
+        Objects.requireNonNull(tileCoord);
+        Objects.requireNonNull(t);
+        Objects.requireNonNull(b);
+        Objects.requireNonNull(g);
         this.cellCoord = tileCoord;
         this.isAlive = false;
         this.tile = t;
         this.board = b;
         this.game = g;
+        this.cellMood = NAIVE;
+        this.cellType = BASIC;
+        this.vampBite = new ArrayList<>();
+        this.addBite(new Coord(-1,-1));
     }
 
     /**
@@ -122,25 +178,37 @@ public class Cell implements Evolvable, Interactable {
         // Start by assuming the cell retains its current state
         Boolean willLive = this.isAlive;
 
-        // Overpopulation: more than 3 neighbors kills a live cell
-        if (aliveNeighbors > 3) {
-            willLive = false;
+        // overpopulation
+        if (aliveNeighbors > maxThreshold) {
+            if (this.cellType.equals(HIGHLANDER)) {
+                willLive = this.checkExtraLife();
+            }
+            else {
+                willLive = false;
+            }
         }
-        // Underpopulation: fewer than 2 neighbors kills a live cell
-        else if (aliveNeighbors < 2) {
-            willLive = false;
+        // underpopulation
+        else if (aliveNeighbors < minThreshold) {
+            if (this.cellType.equals(HIGHLANDER)) {
+               willLive = this.checkExtraLife();
+            }
+            else {
+                willLive = false;
+            }
         }
-        // Respawn: exactly 3 neighbors brings a dead cell to life
-        else if (!this.isAlive && aliveNeighbors == 3) {
+        // respawn
+        else if (!this.isAlive() && aliveNeighbors == 3) {
+            this.setLifePoints(0);
             willLive = true;
         }
-        // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
-        // remains true
-        else
-            this.setLifePoints(this.getLifePoints()+1);
-            
-        if (this.isAlive && !willLive)
-            this.setLifePoints(this.getLifePoints() - 1);         
+        
+        if (willLive) {
+            this.setLifePoints(this.getLifePoints() + 1);
+        }
+        else if (!willLive) {
+            this.setLifePoints(this.getLifePoints() - 1);
+        }
+
         return willLive;
     }
 
@@ -183,6 +251,7 @@ public class Cell implements Evolvable, Interactable {
      * @param gen the Generation instance to associate with this cell
      */
     void addGeneration(Generation gen) {
+        Objects.requireNonNull(gen);
         generations.add(gen);
     }
 
@@ -261,6 +330,26 @@ public class Cell implements Evolvable, Interactable {
     // EXTENDED BEHAVIORS
 
     /**
+     * Set the new minimum threshold for this specific cell
+     * 
+     * @param value the number of new minimum threshold
+     */
+    public void setMinThreshold(int value) {
+
+        this.minThreshold = value;
+    }
+
+    /**
+     * Set the new maximum threshold for this specific cell
+     * 
+     * @param value the number of new maximum threshold
+     */
+    public void setMaxThreshold(int value) {
+
+        this.maxThreshold = value;
+    }
+    
+    /**
      * Retrieves the current energy level of this cell.
      *
      * @return the number of life points the cell currently has
@@ -274,7 +363,8 @@ public class Cell implements Evolvable, Interactable {
      *
      * @param lifePoints the new number of life points to assign to the cell
      */
-    public void setLifePoints(int lifePoints) { 
+    public void setLifePoints(int lifePoints) {
+        
         this.lifepoints = lifePoints;
     }
 
@@ -288,7 +378,77 @@ public class Cell implements Evolvable, Interactable {
      */
     @Override
     public void interact(Cell otherCell) {
-        // TODO Auto-generated method stub
+
+        Objects.requireNonNull(otherCell,"Interaction need cells. 'otherCell' cannot be null");
+        
+        CellMood thisMood = this.cellMood;
+        CellMood otherMood = otherCell.cellMood;
+
+        switch(thisMood) {
+            case NAIVE: 
+                switch (otherMood) {
+                    case NAIVE:
+                        break;
+                    case HEALER:
+                        this.setLifePoints(this.getLifePoints() + 1);
+                        break;
+                    case VAMPIRE:
+                        if (this.isAlive() && this.getLifePoints() >= 0 && !this.getBiteList().contains(otherCell.getCoordinates())) {
+                            otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                            this.setLifePoints(this.getLifePoints() - 1);
+                            this.setFutureMood(VAMPIRE);
+                            this.addBite(otherCell.getCoordinates());
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            break;
+            case HEALER: 
+                switch (otherMood) {
+                    case NAIVE:
+                        otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                        break;
+                    case HEALER:
+                        break;
+                    case VAMPIRE:
+                        if (this.isAlive() && this.getLifePoints() >= 0) {
+                            otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                            this.setLifePoints(this.getLifePoints() - 1);
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                break;
+            case VAMPIRE:
+                    if (otherCell.isAlive() && otherCell.getLifePoints() >= 0 && !otherCell.getBiteList().contains(this.getCoordinates())) {
+                        switch (otherMood) {
+                            case NAIVE:
+                                otherCell.setFutureMood(VAMPIRE);
+                                otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                                this.setLifePoints(this.getLifePoints() + 1);
+                                otherCell.addBite(this.getCoordinates());
+                                break;
+                            case HEALER:
+                                otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                                this.setLifePoints(this.getLifePoints() + 1);
+                                break;
+                            default:
+                                break;
+                        }    
+                    }      
+        }
+    }
+
+    public void setFutureMood(CellMood futureMood) {
+
+        Objects.requireNonNull(futureMood);
+        this.futureMood = futureMood;
+    }
+
+    public CellMood getFutureMood() {
+        return this.futureMood;
     }
 
     /**
@@ -297,17 +457,38 @@ public class Cell implements Evolvable, Interactable {
      * @param t the CellType to set (e.g., BASIC, HIGHLANDER, LONER, SOCIAL)
      */
     public void setType(CellType t) {
-        Objects.requireNonNull(t);
 
-        this.type = t;
+        Objects.requireNonNull(t,"Cell type null");
+
+        switch(t) {
+            case BASIC:
+                this.cellType = BASIC;
+                break;
+            case HIGHLANDER: 
+                this.cellType = HIGHLANDER;
+                this.skippedGen = 0;
+                break;
+            case LONER: 
+                this.cellType = LONER;
+                setMinThreshold(1);
+                break;
+            case SOCIAL: 
+                this.cellType = SOCIAL;
+                setMaxThreshold(8);
+                break;
+            default: 
+                break;
+        }
     }
 
     /**
-     * Returns the type of the cell
-     * @return type
+     * Retrieves the current type of this cell.
+     *
+     * @return the CellType representing the cell’s influencing behavior.
      */
     public CellType getType() {
-        return this.type;
+        
+        return this.cellType;
     }
     
     /**
@@ -316,7 +497,22 @@ public class Cell implements Evolvable, Interactable {
      * @param mood the CellMood to assign (NAIVE, HEALER, or VAMPIRE)
      */
     public void setMood(CellMood mood) {
-        this.mood = mood;
+        
+        Objects.requireNonNull(mood,"Cell mood null");
+
+        switch(mood) {
+            case NAIVE: 
+                this.cellMood = NAIVE;
+                break;
+            case HEALER: 
+                this.cellMood = HEALER;
+                break;
+            case VAMPIRE: 
+                this.cellMood = VAMPIRE;
+                break;
+            default: 
+                break;
+        }
     }
 
     /**
@@ -325,7 +521,33 @@ public class Cell implements Evolvable, Interactable {
      * @return the CellMood representing the cell’s interaction style
      */
     public CellMood getMood() {
-        return this.mood;
+        
+        return this.cellMood;
     }
 
+    public Long getId() {
+        
+        return this.id;
+    }
+
+    public boolean checkExtraLife() {
+
+        if (this.skippedGen < 3 && this.skippedGen != -1) {
+            this.skippedGen ++;
+            return true;
+        }
+        else {
+            this.skippedGen = - 1;
+            return false;
+        }
+    }
+
+    public void addBite(Coord coord) {
+        Objects.requireNonNull(coord);
+        this.vampBite.add(coord);
+    }
+
+    public List<Coord> getBiteList() {
+        return vampBite;
+    }
 }

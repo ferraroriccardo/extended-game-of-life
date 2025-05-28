@@ -1,5 +1,7 @@
 package it.polito.extgol;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -51,8 +53,23 @@ public class ExtendedGameOfLife {
             if (c == null) {
                 throw new IllegalStateException("Missing cell on tile " + tile);
             }
+            c.setLifePoints(c.getLifePoints() + tile.getLifePointModifier());
+
+            List<Cell> neighborCells = 
+                c.getNeighbors().stream()
+                    .map(Tile::getCell) 
+                    .sorted( Comparator .comparing(Cell::getY) .thenComparing(Cell::getX) )
+                    .toList();
+
+            for(int i = 0; i < neighborCells.size(); ++i) {
+                Cell neighborCell = neighborCells.get(i);
+                if (neighborCell.isAlive()) {
+                    c.interact(neighborCell);
+                }
+            }
 
             int aliveNeighbors = c.countAliveNeighbors();
+
             boolean nextState = c.evolve(aliveNeighbors);
 
             nextStates.put(c, nextState);
@@ -64,13 +81,14 @@ public class ExtendedGameOfLife {
         // Step 3: Apply all computed states simultaneously to avoid intermediate inconsistencies
         for (Map.Entry<Cell, Boolean> e : nextStates.entrySet()) {
             Cell c = e.getKey();
+            c.setMood(c.getFutureMood());
             c.setAlive(e.getValue());
             c.addGeneration(nextGen);  // register cell with new generation
         }
 
         // Step 4: Persist snapshot of the next generation state
         nextGen.snapCells();
-        //gameRepository.save(game);
+
         return nextGen;
     }
 
@@ -90,7 +108,6 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
-        //gameRepository.save(game);
         return game;
     }
 
@@ -125,7 +142,6 @@ public class ExtendedGameOfLife {
         game.addGeneration(next);
         current = next;
     }
-    //gameRepository.save(game);
     return game;
 }
 

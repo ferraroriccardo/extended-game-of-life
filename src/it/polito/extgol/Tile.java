@@ -65,7 +65,8 @@ public class Tile implements Interactable{
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
 
-    private Integer lifePointModifier = 0;
+    private int lifePointModifier = 0;
+
     /**
      * Default constructor required by JPA.
      */
