@@ -64,6 +64,8 @@ public class Tile {
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
 
+    private int lifePointModifier = 0;
+
     /**
      * Default constructor required by JPA.
      */
@@ -193,8 +195,7 @@ public class Tile {
      * @return the integer modifier to a cell’s lifePoints when evolving
      */
     public Integer getLifePointModifier() {
-        // TODO Auto-generated method stub
-        return 0;
+        return lifePointModifier;
     }
 
 }

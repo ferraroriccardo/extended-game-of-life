@@ -1,6 +1,7 @@
 package it.polito.extgol;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,9 +61,6 @@ public class Cell implements Evolvable, Interactable {
     @Column(name = "lifepoints", nullable = false)
     protected Integer lifepoints = 0;
 
-    private CellMood mood;
-    private CellType type;
-
     /** Reference to the parent board (read-only). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "board_id", nullable = false, updatable = false)
@@ -101,8 +99,26 @@ public class Cell implements Evolvable, Interactable {
     /** Number of skipped generations */
     protected int skippedGen = 0;
 
+    //TODO 
+    /** Future mood */
+    protected CellMood futureMood = NAIVE;
+
+    //TODO 
+    /** Flag to check <0 lifepoints */
+    protected boolean willdie = false;
+
+    //TODO 
+    /** Cells that have bite this Cell */
+    @Transient
+    protected List<Coord> vampBite = null;
+
     /** Default constructor for JPA compliance. */
     public Cell() {
+        this.cellMood = NAIVE;
+        this.cellType = BASIC;
+        this.vampBite = new ArrayList<>();
+        // just to not have getBiteList null
+        this.addBite(new Coord(-1,-1));
     }
 
     /**
@@ -115,6 +131,8 @@ public class Cell implements Evolvable, Interactable {
         this.isAlive = false;
         this.cellMood = NAIVE;
         this.cellType = BASIC;
+        this.vampBite = new ArrayList<>();
+        this.addBite(new Coord(-1,-1));
     }
 
     /**
@@ -133,6 +151,8 @@ public class Cell implements Evolvable, Interactable {
         this.game = g;
         this.cellMood = NAIVE;
         this.cellType = BASIC;
+        this.vampBite = new ArrayList<>();
+        this.addBite(new Coord(-1,-1));
     }
 
     /**
@@ -153,51 +173,36 @@ public class Cell implements Evolvable, Interactable {
         // Start by assuming the cell retains its current state
         Boolean willLive = this.isAlive;
 
-        // Overpopulation: more than 3 neighbors kills a live cell
+        // overpopulation
         if (aliveNeighbors > maxThreshold) {
-            if( this.cellType.equals(HIGHLANDER) ) {
-                if (this.skippedGen < 3 && this.skippedGen != -1) {
-                    willLive = true;
-                    setLifePoints(this.getLifePoints() + 1);
-                    this.skippedGen ++;
-                }
-                else {
-                    this.skippedGen = -1; 
-                    willLive = false;
-                    setLifePoints(this.getLifePoints() - 1);
-                }
+            if (this.cellType.equals(HIGHLANDER)) {
+                willLive = this.checkExtraLife();
             }
             else {
                 willLive = false;
-                setLifePoints(this.getLifePoints() - 1);
             }
         }
-        // Underpopulation: fewer than 2 neighbors kills a live cell
+        // underpopulation
         else if (aliveNeighbors < minThreshold) {
-            if( this.cellType.equals(HIGHLANDER) ) {
-                if (this.skippedGen < 3 && this.skippedGen != -1) {
-                    willLive = true;
-                    setLifePoints(this.getLifePoints() + 1);
-                    this.skippedGen ++;
-                }
-                else {
-                    this.skippedGen = -1;
-                    willLive = false;
-                    setLifePoints(this.getLifePoints() - 1);
-                }
+            if (this.cellType.equals(HIGHLANDER)) {
+               willLive = this.checkExtraLife();
             }
             else {
                 willLive = false;
-                setLifePoints(this.getLifePoints() - 1);
             }
         }
-        // Respawn: exactly 3 neighbors brings a dead cell to life
-        else if (!this.isAlive && aliveNeighbors == 3) {
-            setLifePoints(0);
+        // respawn
+        else if (!this.isAlive() && aliveNeighbors == 3) {
+            this.setLifePoints(0);
             willLive = true;
         }
-        // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
-        // remains true
+        
+        if (willLive) {
+            this.setLifePoints(this.getLifePoints() + 1);
+        }
+        else if (!willLive) {
+            this.setLifePoints(this.getLifePoints() - 1);
+        }
 
         return willLive;
     }
@@ -329,14 +334,6 @@ public class Cell implements Evolvable, Interactable {
     }
 
     /**
-     * @return the value of the minimum threshold for this specific cell
-     */
-    public int getMinThreshold() {
-
-        return this.minThreshold;
-    }
-
-    /**
      * Set the new maximum threshold for this specific cell
      * 
      * @param value the number of new maximum threshold
@@ -344,14 +341,6 @@ public class Cell implements Evolvable, Interactable {
     public void setMaxThreshold(int value) {
 
         this.maxThreshold = value;
-    }
-
-    /**
-     * @return the value of the maximum threshold for this specific cell
-     */
-    public int getMaxThreshold() {
-
-        return this.maxThreshold;
     }
     
     /**
@@ -386,56 +375,73 @@ public class Cell implements Evolvable, Interactable {
 
         Objects.requireNonNull(otherCell,"Interaction need cells. 'otherCell' cannot be null");
         
-        CellMood thisType = this.cellMood;
-        CellMood otherType = otherCell.cellMood;
+        CellMood thisMood = this.cellMood;
+        CellMood otherMood = otherCell.cellMood;
 
-        switch(thisType) {
+        switch(thisMood) {
             case NAIVE: 
-                switch (otherType) {
+                switch (otherMood) {
                     case NAIVE:
                         break;
                     case HEALER:
                         this.setLifePoints(this.getLifePoints() + 1);
                         break;
                     case VAMPIRE:
-                        otherCell.setLifePoints(otherCell.getLifePoints() + 1);
-                        this.setLifePoints(this.getLifePoints() - 1);
-                        this.setMood(VAMPIRE);
+                        if (this.isAlive() && this.getLifePoints() >= 0 && !this.getBiteList().contains(otherCell.getCoordinates())) {
+                            otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                            this.setLifePoints(this.getLifePoints() - 1);
+                            this.setFutureMood(VAMPIRE);
+                            this.addBite(otherCell.getCoordinates());
+                        }
                         break;
                     default:
+                        break;
                 }
-                break;
+            break;
             case HEALER: 
-                switch (otherType) {
+                switch (otherMood) {
                     case NAIVE:
                         otherCell.setLifePoints(otherCell.getLifePoints() + 1);
                         break;
                     case HEALER:
                         break;
                     case VAMPIRE:
-                        otherCell.setLifePoints(otherCell.getLifePoints() + 1);
-                        this.setLifePoints(this.getLifePoints() - 1);
+                        if (this.isAlive() && this.getLifePoints() >= 0) {
+                            otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+                            this.setLifePoints(this.getLifePoints() - 1);
+                        }
                         break;
                     default:
+                        break;
                     }
                 break;
             case VAMPIRE:
-                    switch (otherType) {
-                        case NAIVE:
-                            otherCell.setLifePoints(otherCell.getLifePoints() - 1);
-                            otherCell.setMood(VAMPIRE);
-                            this.setLifePoints(this.getLifePoints() + 1);
-                            break;
-                        case HEALER:
-                            otherCell.setLifePoints(otherCell.getLifePoints() - 1);
-                            this.setLifePoints(this.getLifePoints() + 1);
-                            break;
-                        case VAMPIRE:
-                            break;
-                        default:
-                    }    
-                break;    
+                    if (otherCell.isAlive() && otherCell.getLifePoints() >= 0 && !otherCell.getBiteList().contains(this.getCoordinates())) {
+                        switch (otherMood) {
+                            case NAIVE:
+                                otherCell.setFutureMood(VAMPIRE);
+                                otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                                this.setLifePoints(this.getLifePoints() + 1);
+                                otherCell.addBite(this.getCoordinates());
+                                break;
+                            case HEALER:
+                                otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                                this.setLifePoints(this.getLifePoints() + 1);
+                                break;
+                            default:
+                                break;
+                        }    
+                    }      
         }
+    }
+
+    public void setFutureMood(CellMood futureMood) {
+
+        this.futureMood = futureMood;
+    }
+
+    public CellMood getFutureMood() {
+        return this.futureMood;
     }
 
     /**
@@ -510,5 +516,30 @@ public class Cell implements Evolvable, Interactable {
     public CellMood getMood() {
         
         return this.cellMood;
+    }
+
+    public Long getId() {
+        
+        return this.id;
+    }
+
+    public boolean checkExtraLife() {
+
+        if (this.skippedGen < 3 && this.skippedGen != -1) {
+            this.skippedGen ++;
+            return true;
+        }
+        else {
+            this.skippedGen = - 1;
+            return false;
+        }
+    }
+
+    public void addBite(Coord coord) {
+        this.vampBite.add(coord);
+    }
+
+    public List<Coord> getBiteList() {
+        return vampBite;
     }
 }

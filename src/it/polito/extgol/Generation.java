@@ -95,6 +95,7 @@ public class Generation {
         this.game = game;
         this.board = board;
         this.step = step;
+        
     }
 
     /**
@@ -164,6 +165,7 @@ public class Generation {
         Objects.requireNonNull(board, "Board cannot be null");
         Objects.requireNonNull(aliveCells, "aliveCells cannot be null");
 
+        
         game.clearGenerations();
         Generation init = new Generation(game, board, 0);
         init.setState(aliveCells, true);
