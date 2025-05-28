@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyJoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 
 /**
@@ -72,6 +73,14 @@ public class Generation {
     @MapKeyJoinColumn(name = "cell_id")
     @Column(name = "is_alive", nullable = false)
     private Map<Cell, Boolean> cellAlivenessStates = new HashMap<>();
+    
+    
+    @Transient 
+    private Map<Cell, Integer> cellLifePoints = new HashMap<>();
+
+    @Transient
+    private Map<Cell, Integer> energyStates = new HashMap<>();  
+
 
     /**
      * Protected no-argument constructor required by JPA.
@@ -95,7 +104,8 @@ public class Generation {
         this.game = game;
         this.board = board;
         this.step = step;
-        
+
+        cellLifePoints = board.getCellSet().stream().collect(Collectors.toMap(Function.identity(), Cell:: getLifePoints));  
     }
 
     /**
@@ -387,4 +397,15 @@ public class Generation {
     public void setCellAlivenessStates(Map<Cell, Boolean> cellAlivenessStates) {
         this.cellAlivenessStates = cellAlivenessStates;
     }
+
+    public Map<Cell, Integer> getCellLifePoints() {
+        return cellLifePoints;
+    }
+
+    public void setCellLifePoints(Map<Cell, Integer> cellLifePoints) {
+        Objects.requireNonNull(cellLifePoints);
+        
+        this.cellLifePoints = cellLifePoints;
+    }
+
 }

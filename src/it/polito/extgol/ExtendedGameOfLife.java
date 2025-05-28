@@ -18,7 +18,6 @@ import jakarta.persistence.EntityTransaction;
  */
 public class ExtendedGameOfLife {
     //private GameRepository gameRepository = new GameRepository();
-
     /**
      * Computes and returns the next generation based on the current one.
      *
@@ -35,6 +34,9 @@ public class ExtendedGameOfLife {
      */
     public Generation evolve(Generation current) {
         Objects.requireNonNull(current, "Current generation cannot be null");
+        //every turn: Cell LP upgrades or downgrades by tile modifier
+        current.getBoard().getTiles().stream().forEach(t -> t.interact(t.getCell()));
+        
         Board board = current.getBoard();
         Game game = current.getGame();
         
@@ -137,6 +139,7 @@ public class ExtendedGameOfLife {
                 .forEach(cell -> game.unrollEvent(eventMap.get(step), cell));
         }
         Generation next = evolve(current);
+        game.addGeneration(next);
         current = next;
     }
     return game;
@@ -215,6 +218,6 @@ public class ExtendedGameOfLife {
      * @return A Map<Integer, EventType> mapping generation steps to associated events.
      */
     public Map<Integer, EventType> loadEvents() {
-        return null;//gameRepository.findGenerationEventMap();
+        return null;
     }
 }
