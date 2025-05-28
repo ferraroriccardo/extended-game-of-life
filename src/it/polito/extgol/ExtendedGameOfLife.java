@@ -34,9 +34,7 @@ public class ExtendedGameOfLife {
      */
     public Generation evolve(Generation current) {
         Objects.requireNonNull(current, "Current generation cannot be null");
-        //every turn: Cell LP upgrades or downgrades by tile modifier
-        current.getBoard().getTiles().stream().forEach(t -> t.interact(t.getCell()));
-        
+
         Board board = current.getBoard();
         Game game = current.getGame();
         
@@ -133,33 +131,21 @@ public class ExtendedGameOfLife {
     Generation current = game.getStart();
     for (int i = 0; i < steps; i++) {
         final int step = i;
-        Generation modifiableCurrent = current.deepCopy();
         
         if (eventMap.containsKey(step)) {
-            Map<Cell, Boolean> cellAlivenessStates = modifiableCurrent.getCellAlivenessStates();
-            Map<Cell, Integer> cellLifePoints = modifiableCurrent.getCellLifePoints();
-
             game.getBoard().getTiles().stream()
-                .forEach(tile -> {
-                    tile.unrollEvent(eventMap.get(step));
-                    tile.interact(tile.getCell());
-                    tile.setLifePointModifier(0);
-                    tile.getCell()
-                });
-
-            game.getBoard().getCellSet().stream()
-                .forEach(cell -> {
-                    game.unrollEvent(eventMap.get(step), cell);
-                    cellLifePoints.put(cell, cell.getLifePoints());
-                    cellAlivenessStates.put(cell, cell.isAlive());
-                });
-                modifiableCurrent.setEvent(eventMap.get(step));   //TODO: check duplicated setEvent(), here g.event was already set to the correct event
-                modifiableCurrent.setCellAlivenessStates(cellAlivenessStates);
-                modifiableCurrent.setCellLifePoints(cellLifePoints);
-        }
-        Generation next = evolve(modifiableCurrent);
-        game.addGeneration(next);
+                .forEach(tile -> tile.unrollEvent(eventMap.get(step)));
+            }
+        //TODO: interact each cell with eachother
+        
+        Generation next = evolve(current);
+        next.setEvent(eventMap.get(step));
         current = next;
+
+        game.getBoard().getTiles().stream().forEach(t -> {
+            t.setLifePointModifier(0);
+            t.setEnableSuperVampire(false);
+        });
     }
     return game;
 }

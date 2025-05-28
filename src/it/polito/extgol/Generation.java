@@ -20,7 +20,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyJoinColumn;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 
 /**
@@ -74,7 +73,9 @@ public class Generation {
     @Column(name = "is_alive", nullable = false)
     private Map<Cell, Boolean> cellAlivenessStates = new HashMap<>();
     
-    @Transient 
+    @ElementCollection(fetch=FetchType.LAZY)
+    @MapKeyJoinColumn(name = "cell_id")
+    @Column(name = "cell_lifepoints", nullable = false)
     private Map<Cell, Integer> cellLifePoints = new HashMap<>();
 
     /**
@@ -211,11 +212,13 @@ public class Generation {
      */
     public Map<Cell, Boolean> snapCells() {
         cellAlivenessStates.clear();
+        cellLifePoints.clear();
         for (Tile tile : board.getTiles()) {
             Cell cell = tile.getCell();
             if (cell == null) {
                 throw new IllegalStateException("Each tile should hold a cell!");
             }
+            cellLifePoints.put(cell, cell.getLifePoints());
             cellAlivenessStates.put(cell, cell.isAlive());
         }
         return Map.copyOf(cellAlivenessStates);
@@ -356,8 +359,7 @@ public class Generation {
      * @return a Map from Cell to its Integer lifePoints value
      */
     public Map<Cell, Integer> getEnergyStates() {
-        Set<Cell> cells = this.snapCells().keySet();
-        return cells.stream().collect(Collectors.toMap(Function.identity(), Cell::getLifePoints, (v1, v2) -> v1, HashMap::new));
+        return this.getCellLifePoints();
     }
 
     /**
@@ -402,14 +404,4 @@ public class Generation {
         
         this.cellLifePoints = cellLifePoints;
     }
-
-    public Generation deepCopy(){
-        //shallow copy di game e board
-        Generation copy = new Generation(this.getGame(), this.getBoard(), this.getStep());
-        copy.setEvent(this.getEvent());
-
-        copy.setCellAlivenessStates(new HashMap<>(this.getCellAlivenessStates()));
-        copy.setCellLifePoints(new HashMap<>(this.getCellLifePoints()));
-    return copy;
-}
 }

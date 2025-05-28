@@ -1,11 +1,9 @@
 package it.polito.extgol;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -71,6 +69,12 @@ public class Game {
     )
     @OrderColumn(name = "generation_index")
     private List<Generation> generations = new ArrayList<>();
+    
+    @OneToMany(cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY)
+    @OrderColumn(name = "eventMapInternal")
+    private Map<Integer, EventType> eventMapInternal;
 
     /**
      * Default constructor for JPA.
@@ -244,6 +248,7 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
+        /*
         Objects.requireNonNull(event);
         Objects.requireNonNull(cell);        
         
@@ -272,6 +277,7 @@ public class Game {
             default:
                 break;
         }
+                */
     }
 
     /**
@@ -309,9 +315,7 @@ public class Game {
      * @return a mutable Map from generation step to EventType
      */
     public Map<Integer, EventType> getEventMapInternal() {
-        Map<Integer, EventType> map = new HashMap<>();
-        this.generations.stream().collect(Collectors.toMap(Generation::getStep, Generation::getEvent));
-        return map;
+        return this.eventMapInternal;
     }
 
     /**
