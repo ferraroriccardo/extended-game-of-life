@@ -74,13 +74,8 @@ public class Generation {
     @Column(name = "is_alive", nullable = false)
     private Map<Cell, Boolean> cellAlivenessStates = new HashMap<>();
     
-    
     @Transient 
     private Map<Cell, Integer> cellLifePoints = new HashMap<>();
-
-    @Transient
-    private Map<Cell, Integer> energyStates = new HashMap<>();  
-
 
     /**
      * Protected no-argument constructor required by JPA.
@@ -408,4 +403,13 @@ public class Generation {
         this.cellLifePoints = cellLifePoints;
     }
 
+    public Generation deepCopy(){
+        //shallow copy di game e board
+        Generation copy = new Generation(this.getGame(), this.getBoard(), this.getStep());
+        copy.setEvent(this.getEvent());
+
+        copy.setCellAlivenessStates(new HashMap<>(this.getCellAlivenessStates()));
+        copy.setCellLifePoints(new HashMap<>(this.getCellLifePoints()));
+    return copy;
+}
 }

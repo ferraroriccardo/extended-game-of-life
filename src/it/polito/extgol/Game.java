@@ -248,21 +248,6 @@ public class Game {
         Objects.requireNonNull(cell);        
         
         switch(event){
-            case CATACLYSM: 
-            if (cell.isAlive())
-                cell.setLifePoints(0); 
-            break;
-
-            case FAMINE: 
-            if (cell.isAlive())
-                cell.setLifePoints(cell.getLifePoints()-1);
-            break;
-
-            case BLOOM: 
-            if (cell.isAlive())
-                cell.setLifePoints(cell.getLifePoints()+2); 
-            break;
-
             case BLOOD_MOON: 
                 if (cell.getMood() == CellMood.VAMPIRE){
                     long n = cell.getNeighbors().stream()
@@ -284,14 +269,9 @@ public class Game {
                     cell.setMood(CellMood.NAIVE);
                 break;
 
-            default:  //wrong cell mood
+            default:
                 break;
         }
-
-        //TODO: update GameRepository?
-        Generation g = generations.get(generations.size()-1);
-        g.setEvent(event);   //TODO: check duplicated setEvent(), here g.event was already set to the correct event
-        generations.add(g);
     }
 
     /**

@@ -88,7 +88,6 @@ public class ExtendedGameOfLife {
 
         // Step 4: Persist snapshot of the next generation state
         nextGen.snapCells();
-
         return nextGen;
     }
 
@@ -134,11 +133,31 @@ public class ExtendedGameOfLife {
     Generation current = game.getStart();
     for (int i = 0; i < steps; i++) {
         final int step = i;
+        Generation modifiableCurrent = current.deepCopy();
+        
         if (eventMap.containsKey(step)) {
-            game.getBoard().getCellSet()
-                .forEach(cell -> game.unrollEvent(eventMap.get(step), cell));
+            Map<Cell, Boolean> cellAlivenessStates = modifiableCurrent.getCellAlivenessStates();
+            Map<Cell, Integer> cellLifePoints = modifiableCurrent.getCellLifePoints();
+
+            game.getBoard().getTiles().stream()
+                .forEach(tile -> {
+                    tile.unrollEvent(eventMap.get(step));
+                    tile.interact(tile.getCell());
+                    tile.setLifePointModifier(0);
+                    tile.getCell()
+                });
+
+            game.getBoard().getCellSet().stream()
+                .forEach(cell -> {
+                    game.unrollEvent(eventMap.get(step), cell);
+                    cellLifePoints.put(cell, cell.getLifePoints());
+                    cellAlivenessStates.put(cell, cell.isAlive());
+                });
+                modifiableCurrent.setEvent(eventMap.get(step));   //TODO: check duplicated setEvent(), here g.event was already set to the correct event
+                modifiableCurrent.setCellAlivenessStates(cellAlivenessStates);
+                modifiableCurrent.setCellLifePoints(cellLifePoints);
         }
-        Generation next = evolve(current);
+        Generation next = evolve(modifiableCurrent);
         game.addGeneration(next);
         current = next;
     }
