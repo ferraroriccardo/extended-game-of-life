@@ -490,14 +490,6 @@ public class Cell implements Evolvable, Interactable {
         
         return this.cellType;
     }
-
-    /**
-     * Returns the type of the cell
-     * @return type
-     */
-    public CellType getType() {
-        return this.type;
-    }
     
     /**
      * Sets the current mood of this cell, impacting how it interacts with others.
