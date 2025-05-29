@@ -203,12 +203,11 @@ public class Cell implements Evolvable, Interactable {
         }
         // respawn
         else if (!this.isAlive() && aliveNeighbors == 3) {
-            this.setLifePoints(0);
             willLive = true;
             this.setLifePoints(0);
         }
         // Survave (2 or 3 neighbors on a live cell) gain 1 lp
-        else if (this.isAlive)
+        else if (willLive)
             this.setLifePoints(this.getLifePoints()+1);
             
         if (this.isAlive && !willLive)

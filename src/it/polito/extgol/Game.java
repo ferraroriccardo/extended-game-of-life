@@ -1,6 +1,7 @@
 package it.polito.extgol;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +75,7 @@ public class Game {
     
     @ElementCollection
     @MapKeyColumn(name = "generation_id")
-    private Map<Integer, EventType> eventMapInternal = new java.util.HashMap<>();
+    private Map<Integer, EventType> eventMapInternal = new HashMap<>();
 
     /** 
      * Default constructor for JPA.
