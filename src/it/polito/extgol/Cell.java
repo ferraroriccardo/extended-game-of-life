@@ -1,7 +1,6 @@
 package it.polito.extgol;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,6 +59,10 @@ public class Cell implements Evolvable, Interactable {
     /** Persisted lifepoints (default 0) */
     @Column(name = "lifepoints", nullable = false)
     protected Integer lifepoints = 0;
+
+    private CellMood mood;
+    private boolean superVampire = false;
+    private CellType type;
 
     /** Reference to the parent board (read-only). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -175,6 +178,8 @@ public class Cell implements Evolvable, Interactable {
      */
     @Override
     public Boolean evolve(int aliveNeighbors) {
+        this.tile.interact(this);
+
         // Start by assuming the cell retains its current state
         Boolean willLive = this.isAlive;
 
@@ -198,17 +203,15 @@ public class Cell implements Evolvable, Interactable {
         }
         // respawn
         else if (!this.isAlive() && aliveNeighbors == 3) {
-            this.setLifePoints(0);
             willLive = true;
+            this.setLifePoints(0);
         }
-        
-        if (willLive) {
-            this.setLifePoints(this.getLifePoints() + 1);
-        }
-        else if (!willLive) {
-            this.setLifePoints(this.getLifePoints() - 1);
-        }
-
+        // Survave (2 or 3 neighbors on a live cell) gain 1 lp
+        else if (willLive)
+            this.setLifePoints(this.getLifePoints()+1);
+            
+        if (this.isAlive && !willLive)
+            this.setLifePoints(this.getLifePoints() - 1);         
         return willLive;
     }
 
@@ -550,4 +553,13 @@ public class Cell implements Evolvable, Interactable {
     public List<Coord> getBiteList() {
         return vampBite;
     }
+    public boolean isSuperVampire() {
+        return superVampire;
+    }
+
+    public void setSuperVampire() {
+        if (this.getMood() == CellMood.VAMPIRE)
+            this.superVampire = true;
+    }
+
 }

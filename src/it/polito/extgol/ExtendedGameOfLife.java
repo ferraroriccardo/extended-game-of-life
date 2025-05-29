@@ -1,7 +1,6 @@
 package it.polito.extgol;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,9 +33,7 @@ public class ExtendedGameOfLife {
      */
     public Generation evolve(Generation current) {
         Objects.requireNonNull(current, "Current generation cannot be null");
-        //every turn: Cell LP upgrades or downgrades by tile modifier
-        current.getBoard().getTiles().stream().forEach(t -> t.interact(t.getCell()));
-        
+
         Board board = current.getBoard();
         Game game = current.getGame();
         
@@ -53,25 +50,15 @@ public class ExtendedGameOfLife {
             if (c == null) {
                 throw new IllegalStateException("Missing cell on tile " + tile);
             }
-            c.setLifePoints(c.getLifePoints() + tile.getLifePointModifier());
 
-            List<Cell> neighborCells = 
-                c.getNeighbors().stream()
+            c.getNeighbors().stream()
                     .map(Tile::getCell) 
-                    .sorted( Comparator .comparing(Cell::getY) .thenComparing(Cell::getX) )
-                    .toList();
-
-            for(int i = 0; i < neighborCells.size(); ++i) {
-                Cell neighborCell = neighborCells.get(i);
-                if (neighborCell.isAlive()) {
-                    c.interact(neighborCell);
-                }
-            }
+                    .sorted(Comparator.comparing(Cell::getY).thenComparing(Cell::getX))
+                    .filter(Cell::isAlive)
+                    .forEach(cell -> c.interact(cell));
 
             int aliveNeighbors = c.countAliveNeighbors();
-
             boolean nextState = c.evolve(aliveNeighbors);
-
             nextStates.put(c, nextState);
         }
 
@@ -88,7 +75,6 @@ public class ExtendedGameOfLife {
 
         // Step 4: Persist snapshot of the next generation state
         nextGen.snapCells();
-
         return nextGen;
     }
 
@@ -134,13 +120,21 @@ public class ExtendedGameOfLife {
     Generation current = game.getStart();
     for (int i = 0; i < steps; i++) {
         final int step = i;
+        
         if (eventMap.containsKey(step)) {
-            game.getBoard().getCellSet()
-                .forEach(cell -> game.unrollEvent(eventMap.get(step), cell));
-        }
+            game.getBoard().getTiles().stream()
+                .forEach(tile -> tile.unrollEvent(eventMap.get(step)));
+            }
+        //TODO: interact each cell with eachother
+        
         Generation next = evolve(current);
-        game.addGeneration(next);
+        next.setEvent(eventMap.get(step));
         current = next;
+
+        game.getBoard().getTiles().stream().forEach(t -> {
+            t.setLifePointModifier(0);
+            t.setEnableSuperVampire(false);
+        });
     }
     return game;
 }
