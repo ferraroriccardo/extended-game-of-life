@@ -124,8 +124,7 @@ public class ExtendedGameOfLife {
         if (eventMap.containsKey(step)) {
             game.getBoard().getTiles().stream()
                 .forEach(tile -> tile.unrollEvent(eventMap.get(step)));
-            }
-        //TODO: interact each cell with eachother
+        } 
         
         Generation next = evolve(current);
         next.setEvent(eventMap.get(step));

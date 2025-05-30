@@ -1,5 +1,7 @@
 package it.polito.extgol;
 
+import static it.polito.extgol.CellType.BASIC;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,7 +123,6 @@ public class Board {
             c.setMood(CellMood.NAIVE);
             c.setType(CellType.BASIC);
         }
-
         return board;
     }
 
@@ -242,8 +243,29 @@ public class Board {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                Coord coord = new Coord(x, y);
-                sb.append(alive.contains(coord) ? StatusVisualization(coord) : '0');
+                Coord coord = new Coord(x,y);
+                if (alive.contains( coord )) {
+                    Cell c = this.getTile(coord).getCell();
+                    switch (c.getType()) {
+                        case BASIC:
+                            sb.append('C'); 
+                            break;
+                        case HIGHLANDER:
+                            sb.append('H');
+                            break;
+                        case LONER:
+                            sb.append('L');
+                            break;
+                        case SOCIAL:
+                            sb.append('S');
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else {
+                    sb.append('0');
+                }
             }
             // use height here so you don't append a newline after the last row
             if (y < height - 1) {

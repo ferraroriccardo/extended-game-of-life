@@ -249,36 +249,29 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        /*
-        Objects.requireNonNull(event);
-        Objects.requireNonNull(cell);        
+        //this method should not be called, to let Game.class interact only with tiles and not directly to cells
+        Tile tile = this.board.getTile(cell.getCoordinates());
         
+        Objects.requireNonNull(event);
         switch(event){
-            case BLOOD_MOON: 
-                if (cell.getMood() == CellMood.VAMPIRE){
-                    long n = cell.getNeighbors().stream()
-                                                .map(Tile::getCell)
-                                                .filter(c -> c.getMood() != CellMood.VAMPIRE)
-                                                .filter(c -> c.isAlive())
-                                                .peek(c -> c.setLifePoints(c.getLifePoints()-1))
-                                                .peek(c -> c.setMood(CellMood.VAMPIRE))
-                                                .collect(Collectors.counting());
-                    if (cell.isAlive)
-                        cell.setLifePoints(cell.getLifePoints() + (int) n);
-                }
-                break;
+            case CATACLYSM -> tile.setLifePointModifier(-1 * tile.getCell().getLifePoints());
 
-            case SANCTUARY: 
-                if (cell.isAlive() && cell.getMood() == CellMood.HEALER)
-                    cell.setLifePoints(cell.getLifePoints() + 1);
-                else if (cell.isAlive && cell.getMood() == CellMood.VAMPIRE)
-                    cell.setMood(CellMood.NAIVE);
-                break;
+            case FAMINE -> tile.setLifePointModifier(-1);
 
-            default:
-                break;
+            case BLOOM -> tile.setLifePointModifier(+2);
+
+            case BLOOD_MOON -> tile.setEnableSuperVampire(true);
+
+            case SANCTUARY -> {
+                Cell c = tile.getCell();
+                if (c.getMood() == CellMood.VAMPIRE)
+                    c.setMood(CellMood.NAIVE);
+
+                if (c.getMood() == CellMood.HEALER)
+                    tile.setLifePointModifier(+1);
+            }
+            default -> {}
         }
-                */
     }
 
     /**
