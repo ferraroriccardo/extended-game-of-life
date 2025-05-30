@@ -19,9 +19,6 @@ import it.polito.extgol.ExtendedGameOfLife;
 import it.polito.extgol.Game;
 import it.polito.extgol.Generation;
 import it.polito.extgol.JPAUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
-
 /**
  * JUnit test suite for the basic GOL
  * 
@@ -37,33 +34,12 @@ public class BasicGOLTests {
      */
     @Before
     public void setUp() {
-        clearDatabase();
+        TestDatabaseUtil.clearDatabase();
         facade = new ExtendedGameOfLife();
         game  = Game.create("TestGame", 3, 3);
         board = game.getBoard();
     }
-
-    /**
-     * Deletes all rows in relevant tables to provide a clean state.
-     * Ignores missing-table errors when schema hasn't been created yet.
-     */
-    private void clearDatabase() {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        for (String table : List.of("generation_state", "game", "generation", "board",  "tile", "games")) {
-            try {
-                em.createNativeQuery("DELETE FROM " + table).executeUpdate();
-            } catch (Exception e) {
-                System.out.println(table +" does not exist!");
-            }
-        }
-        tx.commit();
-        em.close();
-    }
-
      
-
     /**
      * Close JPA resources after all tests.
      */
