@@ -24,7 +24,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
-import jakarta.persistence.ValidationMode;
 
 /**
  * Entity representing a cell in the Extended Game of Life.
@@ -79,41 +78,32 @@ public class Cell implements Evolvable, Interactable {
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
 
-    //TODO
     /** Default setting */
     private int minThreshold = 2;
 
-    //TODO
     /** Default setting */
     private int maxThreshold = 3;
 
-    //TODO check if it has to be saved
     /** Default setting as NAIVE */
     private CellMood cellMood;
 
-    //TODO check if it has to be saved
     /** Default setting as BASIC */
     private CellType cellType;
 
-    //TODO check if it has to be saved
     /** Number of skipped generations */
     private int skippedGen = 0;
 
-    //TODO 
     /** Future mood */
     private CellMood futureMood = NAIVE;
 
-    //TODO 
     /** Cells that have bite this Cell */
     @Transient
     private List<Coord> vampBite = null;
 
-    //TODO
     /** Healer interactions */
     @Transient
     private List<Coord> healerGift = null;
 
-    //TODO
     /** Vamp super mode in BloodMoon event */
     private boolean superVampire = false;
 
@@ -494,18 +484,24 @@ public class Cell implements Evolvable, Interactable {
         switch(t) {
             case BASIC:
                 this.cellType = BASIC;
+                this.setMinThreshold(2);
+                this.setMaxThreshold(3);
                 break;
             case HIGHLANDER: 
                 this.cellType = HIGHLANDER;
                 this.skippedGen = 0;
+                this.setMinThreshold(2);
+                this.setMaxThreshold(3);
                 break;
             case LONER: 
                 this.cellType = LONER;
-                setMinThreshold(1);
+                this.setMinThreshold(1);
+                this.setMaxThreshold(3);
                 break;
             case SOCIAL: 
                 this.cellType = SOCIAL;
-                setMaxThreshold(8);
+                this.setMinThreshold(2);
+                this.setMaxThreshold(8);
                 break;
             default: 
                 break;
