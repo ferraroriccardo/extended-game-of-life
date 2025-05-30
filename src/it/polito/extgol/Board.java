@@ -242,7 +242,8 @@ public class Board {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                sb.append(alive.contains(new Coord(x, y)) ? 'C' : '0');
+                Coord coord = new Coord(x, y);
+                sb.append(alive.contains(coord) ? StatusVisualization(coord) : '0');
             }
             // use height here so you don't append a newline after the last row
             if (y < height - 1) {
@@ -252,6 +253,23 @@ public class Board {
         return sb.toString();
     }
 
+    public char StatusVisualization (Coord coord) {
+        CellType cell;
+        cell = getTile(coord).getCell().getType();
+        switch (cell) {
+            case HIGHLANDER:
+                return 'H';
+            
+            case LONER:
+                return 'L';
+            
+            case SOCIAL:
+                return 'S';
+                
+            default:
+                return 'C';
+        }
+    }
     // EXTENDED BEHAVIORS
 
     /**
