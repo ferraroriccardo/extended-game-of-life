@@ -18,9 +18,6 @@ import it.polito.extgol.Coord;
 import it.polito.extgol.ExtendedGameOfLife;
 import it.polito.extgol.Game;
 import it.polito.extgol.Generation;
-import it.polito.extgol.JPAUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR1CellsTests {
@@ -41,27 +38,11 @@ public class ExtGOLR1CellsTests {
      */
     @Before
     public void setUp() {
-        clearDatabase();
+        TestDatabaseUtil.clearDatabase();
         facade = new ExtendedGameOfLife();
         game  = Game.createExtended("TestGame", 3, 3);
         board = game.getBoard();
     }
-
-    private void clearDatabase() {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        for (String table : List.of("generation_state", "generation", "board", "game", "tile")) {
-            try {
-                em.createNativeQuery("DELETE FROM " + table).executeUpdate();
-            } catch (Exception e) {
-                System.out.println(table +" does not exist!");
-            }
-        }
-        tx.commit();
-        em.close();
-    }
-
     // R1 Cells Extended Behaviors
 
     // Specialized cells

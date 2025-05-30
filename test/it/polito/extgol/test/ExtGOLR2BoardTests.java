@@ -21,8 +21,6 @@ import it.polito.extgol.Generation;
 import it.polito.extgol.Interactable;
 import it.polito.extgol.JPAUtil;
 import it.polito.extgol.Tile;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR2BoardTests {
@@ -43,27 +41,11 @@ public class ExtGOLR2BoardTests {
      */
     @Before
     public void setUp() {
-        clearDatabase();
+        TestDatabaseUtil.clearDatabase();
         facade = new ExtendedGameOfLife();
         game  = Game.createExtended("TestGame", 6, 6);
         board = game.getBoard();
     }
-
-    private void clearDatabase() {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        for (String table : List.of("generation_state", "generation","board", "game", "tile")) {
-            try {
-                em.createNativeQuery("DELETE FROM " + table).executeUpdate();
-            } catch (Exception e) {
-                System.out.println(table +" does not exist!");
-            }
-        }
-        tx.commit();
-        em.close();
-    }
-
     // R2 Board Extended Behaviors
 
     // Dynamic Tiles

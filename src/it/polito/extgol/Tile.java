@@ -66,6 +66,7 @@ public class Tile implements Interactable{
     private Set<Tile> neighbors = new HashSet<Tile>();
 
     private int lifePointModifier = 0;
+    private boolean enableSuperVampire = false;
 
     /**
      * Default constructor required by JPA.
@@ -226,8 +227,40 @@ public class Tile implements Interactable{
         if (cell.isAlive()) {
             other.lifepoints += getLifePointModifier();
         }
-    
-        
+    }
+
+
+    void unrollEvent(EventType event) {
+        Objects.requireNonNull(event);
+
+        switch(event){
+            case CATACLYSM -> this.setLifePointModifier(-1 * this.getCell().getLifePoints());
+
+            case FAMINE -> this.setLifePointModifier(-1);
+
+            case BLOOM -> this.setLifePointModifier(+2);
+
+            case BLOOD_MOON -> this.setEnableSuperVampire(true);
+
+            case SANCTUARY -> {
+                Cell c = this.getCell();
+                if (c.getMood() == CellMood.VAMPIRE)
+                    c.setMood(CellMood.NAIVE);
+
+                if (c.getMood() == CellMood.HEALER)
+                    this.setLifePointModifier(+1);
+            }
+
+            default -> {}
+        }
+    }
+
+    public boolean isEnableSuperVampire() {
+        return enableSuperVampire;
+    }
+
+    public void setEnableSuperVampire(boolean status) {
+        this.enableSuperVampire = status;
     }
 
 }

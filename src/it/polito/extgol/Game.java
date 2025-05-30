@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FetchType;
@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderColumn;
@@ -71,8 +72,12 @@ public class Game {
     )
     @OrderColumn(name = "generation_index")
     private List<Generation> generations = new ArrayList<>();
+    
+    @ElementCollection
+    @MapKeyColumn(name = "generation_id")
+    private Map<Integer, EventType> eventMapInternal = new HashMap<>();
 
-    /**
+    /** 
      * Default constructor for JPA.
      */
     protected Game() {
@@ -244,26 +249,11 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        
+        /*
         Objects.requireNonNull(event);
         Objects.requireNonNull(cell);        
         
         switch(event){
-            case CATACLYSM: 
-            if (cell.isAlive())
-                cell.setLifePoints(0); 
-            break;
-
-            case FAMINE: 
-            if (cell.isAlive())
-                cell.setLifePoints(cell.getLifePoints()-1);
-            break;
-
-            case BLOOM: 
-            if (cell.isAlive())
-                cell.setLifePoints(cell.getLifePoints()+2); 
-            break;
-
             case BLOOD_MOON: 
                 if (cell.getMood() == CellMood.VAMPIRE){
                     long n = cell.getNeighbors().stream()
@@ -285,14 +275,10 @@ public class Game {
                     cell.setMood(CellMood.NAIVE);
                 break;
 
-            default:  //wrong cell mood
+            default:
                 break;
         }
-
-        //TODO: update GameRepository?
-        Generation g = generations.get(generations.size()-1);
-        g.setEvent(event);   //TODO: check duplicated setEvent(), here g.event was already set to the correct event
-        generations.add(g);
+                */
     }
 
     /**
@@ -330,9 +316,7 @@ public class Game {
      * @return a mutable Map from generation step to EventType
      */
     public Map<Integer, EventType> getEventMapInternal() {
-        Map<Integer, EventType> map = new HashMap<>();
-        this.generations.stream().collect(Collectors.toMap(Generation::getStep, Generation::getEvent));
-        return map;
+        return this.eventMapInternal;
     }
 
     /**
