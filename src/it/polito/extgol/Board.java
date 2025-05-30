@@ -1,7 +1,5 @@
 package it.polito.extgol;
 
-import static it.polito.extgol.CellType.BASIC;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
