@@ -104,10 +104,6 @@ public class Cell implements Evolvable, Interactable {
     protected CellMood futureMood = NAIVE;
 
     //TODO 
-    /** Flag to check <0 lifepoints */
-    protected boolean willdie = false;
-
-    //TODO 
     /** Cells that have bite this Cell */
     @Transient
     protected List<Coord> vampBite = null;
@@ -384,6 +380,8 @@ public class Cell implements Evolvable, Interactable {
         CellMood thisMood = this.cellMood;
         CellMood otherMood = otherCell.cellMood;
 
+
+        //TODO supervampire
         switch(thisMood) {
             case NAIVE: 
                 switch (otherMood) {

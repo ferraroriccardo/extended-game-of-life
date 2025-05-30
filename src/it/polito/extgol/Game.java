@@ -244,6 +244,7 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
+        
         Objects.requireNonNull(event);
         Objects.requireNonNull(cell);        
         
