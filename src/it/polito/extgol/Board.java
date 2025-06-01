@@ -381,7 +381,8 @@ public class Board {
         Objects.requireNonNull(gen);
         
         return gen.getAliveCells().stream()
-        .sorted(Comparator.comparing(Cell::getLifePoints).reversed()).limit(n)
+        .sorted(Comparator.comparing(Cell::getLifePoints).reversed()
+        .thenComparing(Cell::getY).thenComparing(Cell::getX)).limit(n)  //In case of a tie, I return the cell closest to the top-left corner like in getHighestEnergyCell
         .collect(Collectors.toList());
     }
 
