@@ -14,6 +14,7 @@ import static it.polito.extgol.CellType.SOCIAL;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -97,11 +98,11 @@ public class Cell implements Evolvable, Interactable {
     private CellMood futureMood = NAIVE;
 
     /** Cells that have bite this Cell */
-    @Transient
+    @ElementCollection
     private List<Coord> vampBite = null;
 
     /** Healer interactions */
-    @Transient
+    @ElementCollection
     private List<Coord> healerGift = null;
 
     /** Vamp super mode in BloodMoon event */
@@ -595,4 +596,13 @@ public class Cell implements Evolvable, Interactable {
         return healerGift;
     }
 
+    /*
+     * It reset the interaction of vampires and healers 
+     */
+    public void resetHVinteractions() {
+        this.vampBite.clear();
+        this.healerGift.clear();
+        this.addBite(new Coord(-1,-1));
+        this.addHGift(new Coord(-1,-1));
+}
 }

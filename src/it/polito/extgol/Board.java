@@ -1,7 +1,5 @@
 package it.polito.extgol;
 
-import static it.polito.extgol.CellType.BASIC;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -248,7 +246,7 @@ public class Board {
                     Cell c = this.getTile(coord).getCell();
                     switch (c.getType()) {
                         case BASIC:
-                            sb.append('C');
+                            sb.append('C'); 
                             break;
                         case HIGHLANDER:
                             sb.append('H');
@@ -275,6 +273,25 @@ public class Board {
         return sb.toString();
     }
 
+    public char StatusVisualization (Coord coord) {
+        Objects.requireNonNull(coord);
+
+        CellType cell;
+        cell = getTile(coord).getCell().getType();
+        switch (cell) {
+            case HIGHLANDER:
+                return 'H';
+            
+            case LONER:
+                return 'L';
+            
+            case SOCIAL:
+                return 'S';
+                
+            default:
+                return 'C';
+        }
+    }
     // EXTENDED BEHAVIORS
 
     /**
@@ -366,7 +383,8 @@ public class Board {
         Objects.requireNonNull(gen);
         
         return gen.getAliveCells().stream()
-        .sorted(Comparator.comparing(Cell::getLifePoints).reversed()).limit(n)
+        .sorted(Comparator.comparing(Cell::getLifePoints).reversed()
+        .thenComparing(Cell::getY).thenComparing(Cell::getX)).limit(n)  //In case of a tie, I return the cell closest to the top-left corner like in getHighestEnergyCell
         .collect(Collectors.toList());
     }
 
