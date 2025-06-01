@@ -17,7 +17,7 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
     public Optional<Board> load(Integer id) {
         EntityManager em = JPAUtil.getEntityManager();
         TypedQuery<Board> query = em.createQuery(
-            "SELECT b FROM Board b " +
+            "SELECT * FROM Board b " +
             "JOIN b.tile t " +
             "JOIN t.cell c " +
             "WHERE b.id =: id", 
