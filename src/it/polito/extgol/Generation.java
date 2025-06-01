@@ -192,7 +192,13 @@ public class Generation {
         Objects.requireNonNull(prev, "Previous generation cannot be null");
 
         Generation next = new Generation(prev.getGame(), prev.getBoard(), prev.getStep() + 1);
-        next.snapCells();
+        
+        for (Tile tile : prev.getBoard().getTiles()) { //I'm resetting the Healers and Vampires interactions for the new gen
+            Cell cell = tile.getCell();
+                cell.resetHVinteractions(); //I don't check if the cell is alive cause a dead cell can return alive so also its modifier needs to be resetted
+        }
+
+        next.snapCells(); 
         prev.getGame().addGeneration(next, prev.getStep() + 1);
         return next;
     }
