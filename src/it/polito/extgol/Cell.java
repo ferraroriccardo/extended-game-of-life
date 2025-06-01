@@ -14,6 +14,7 @@ import static it.polito.extgol.CellType.SOCIAL;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -97,11 +98,11 @@ public class Cell implements Evolvable, Interactable {
     private CellMood futureMood = NAIVE;
 
     /** Cells that have bite this Cell */
-    @Transient
+    @ElementCollection
     private List<Coord> vampBite = null;
 
     /** Healer interactions */
-    @Transient
+    @ElementCollection
     private List<Coord> healerGift = null;
 
     /** Vamp super mode in BloodMoon event */
