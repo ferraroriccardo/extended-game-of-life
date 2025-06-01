@@ -595,4 +595,13 @@ public class Cell implements Evolvable, Interactable {
         return healerGift;
     }
 
+    /*
+     * It reset the interaction of vampires and healers 
+     */
+    public void resetHVinteractions() {
+        this.vampBite.clear();
+        this.healerGift.clear();
+        this.addBite(new Coord(-1,-1));
+        this.addHGift(new Coord(-1,-1));
+}
 }
