@@ -1,6 +1,7 @@
 package it.polito.extgol;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import jakarta.persistence.EntityManager;
@@ -15,6 +16,8 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
  
 
     public Optional<Board> load(Integer boardId) {
+        Objects.requireNonNull(boardId);
+
         EntityManager em = JPAUtil.getEntityManager();
         TypedQuery<Board> query = em.createQuery(
             "SELECT b FROM Board b " +
@@ -34,6 +37,8 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
     }
 
     public Optional<Board> load(Long gameId) {
+        Objects.requireNonNull(gameId);
+
         EntityManager em = JPAUtil.getEntityManager();
         TypedQuery<Board> query = em.createQuery(
             "SELECT b FROM Board b " +
@@ -54,6 +59,8 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
 
 
     public Optional<Board> load(int id, EntityManager em) {
+        Objects.requireNonNull(em);
+
         Board board = em.find(Board.class, id);
         if (board == null)
             return Optional.empty();

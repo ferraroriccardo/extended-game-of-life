@@ -1,6 +1,7 @@
 package it.polito.extgol;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import jakarta.persistence.EntityManager;
@@ -19,6 +20,8 @@ public class CellRepository  extends GenericExtGOLRepository<Cell, Long> {
      * @return the cell object
      */
     public Cell load(Long id) {
+        Objects.requireNonNull(id);
+
         EntityManager em = JPAUtil.getEntityManager();
 
         try {
@@ -34,6 +37,8 @@ public class CellRepository  extends GenericExtGOLRepository<Cell, Long> {
      * @return the list of alive cells of the board
      */
     public Optional<List<Cell>> loadAliveCells(Integer boardId) {
+        Objects.requireNonNull(boardId);
+        
         EntityManager em = JPAUtil.getEntityManager();
         TypedQuery<Cell> query = em.createQuery(
                 "SELECT c FROM Cell c WHERE c.isAlive = TRUE AND c.board.id = :boardId", 
@@ -54,6 +59,8 @@ public class CellRepository  extends GenericExtGOLRepository<Cell, Long> {
      * @return the list of cells of the board
      */
     public Optional<List<Cell>> loadCells(Integer boardId) {
+        Objects.requireNonNull(boardId);
+
         EntityManager em = JPAUtil.getEntityManager();
         TypedQuery<Cell> query = em.createQuery(
                 "SELECT c FROM Cell c WHERE c.board.id = :boardId", 
@@ -69,6 +76,8 @@ public class CellRepository  extends GenericExtGOLRepository<Cell, Long> {
     }
 
     Optional<List<Cell>> loadCells(int boardId, EntityManager em) {
+        Objects.requireNonNull(em);
+        
         TypedQuery<Cell> query = em.createQuery(
             "SELECT c FROM Cell c WHERE c.board.id = :boardId",
             Cell.class);

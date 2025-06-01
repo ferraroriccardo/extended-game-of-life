@@ -274,6 +274,8 @@ public class Board {
     }
 
     public char StatusVisualization (Coord coord) {
+        Objects.requireNonNull(coord);
+
         CellType cell;
         cell = getTile(coord).getCell().getType();
         switch (cell) {
