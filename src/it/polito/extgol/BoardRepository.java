@@ -1,7 +1,7 @@
 package it.polito.extgol;
 
+import java.util.List;
 import java.util.Optional;
-
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -14,15 +14,15 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
     }
  
 
-    public Optional<Board> load(Integer id) {
+    public Optional<Board> load(Integer boardId) {
         EntityManager em = JPAUtil.getEntityManager();
         TypedQuery<Board> query = em.createQuery(
-            "SELECT * FROM Board b " +
-            "JOIN b.tile t " +
-            "JOIN t.cell c " +
-            "WHERE b.id =: id", 
+            "SELECT b FROM Board b " +
+            "JOIN FETCH b.tiles t " +
+            "JOIN FETCH t.cell c " +
+            "WHERE b.id =: boardId", 
             Board.class);
-        query.setParameter("id", id);
+        query.setParameter("boardId", boardId);
         
         try {
             return Optional.of(query.getSingleResult());
@@ -33,4 +33,43 @@ public class BoardRepository  extends GenericExtGOLRepository<Board, Long> {
         }
     }
 
+    public Optional<Board> load(Long gameId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        TypedQuery<Board> query = em.createQuery(
+            "SELECT b FROM Board b " +
+            "JOIN FETCH b.tiles t " +
+            "JOIN FETCH t.cell c " +
+            "WHERE b.game.id =: gameId", 
+            Board.class);
+        query.setParameter("gameId", gameId);
+        
+        try {
+            return Optional.of(query.getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        } finally {
+            em.close();
+        }
+    }
+
+
+    public Optional<Board> load(int id, EntityManager em) {
+        Board board = em.find(Board.class, id);
+        if (board == null)
+            return Optional.empty();
+
+        CellRepository cellRepo = new CellRepository();
+        Optional<List<Cell>> cellsOpt = cellRepo.loadCells(board.getId(), em);
+        if (cellsOpt.isPresent()) {
+            List<Cell> cells = cellsOpt.get();
+            for (Cell c : cells) {
+                Coord co = c.getCoordinates();
+                Tile t = board.getTile(co);
+                if (t != null) {
+                    t.setCell(c);
+                }
+            }
+        }
+        return Optional.of(board);
+    }
 }
