@@ -15,9 +15,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Transient;
 
 /**
  * Entity representing a single square on the Game of Life board.
@@ -62,7 +62,7 @@ public class Tile implements Interactable{
     private Cell cell;
 
     /** Neighboring tiles for interactions. Not persisted. */
-    @Transient
+    @ManyToMany
     private Set<Tile> neighbors = new HashSet<Tile>();
 
     private int lifePointModifier = 0;
