@@ -19,7 +19,6 @@ import it.polito.extgol.Game;
 import it.polito.extgol.Generation;
 import it.polito.extgol.JPAUtil;
 import jakarta.persistence.EntityManager;
-
 import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 /**
@@ -42,7 +41,7 @@ public class ExtGOLCombinedTests {
         game  = Game.createExtended("TestGame", 5, 4);
         board = game.getBoard();
     }
-     
+
     /**
      * Close JPA resources after all tests.
      */
@@ -172,7 +171,7 @@ public class ExtGOLCombinedTests {
 
         int energy=lp1.get(vamp1);
         assertEquals(4, energy);
-
+        
         // Its neighbors should have turned Vampire
         Cell naive1=board.getTile(new Coord(1,2)).getCell();
         assertEquals(CellMood.VAMPIRE, naive1.getMood());
@@ -200,6 +199,7 @@ public class ExtGOLCombinedTests {
         Game result = facade.run(game, 1, Map.of(0, EventType.SANCTUARY));
         
         Generation secondGeneration = result.getGenerations().get(1);
+        String str=facade.visualize(secondGeneration);
         // Healer at (1,1) +1 LP
         Cell healer = facade.getAliveCells(secondGeneration).get(new Coord(1,1));
         assertEquals(Integer.valueOf(2), secondGeneration.getEnergyStates().get(healer));
