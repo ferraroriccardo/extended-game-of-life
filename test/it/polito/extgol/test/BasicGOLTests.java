@@ -19,6 +19,7 @@ import it.polito.extgol.ExtendedGameOfLife;
 import it.polito.extgol.Game;
 import it.polito.extgol.Generation;
 import it.polito.extgol.JPAUtil;
+
 /**
  * JUnit test suite for the basic GOL
  * 
@@ -38,8 +39,8 @@ public class BasicGOLTests {
         facade = new ExtendedGameOfLife();
         game  = Game.create("TestGame", 3, 3);
         board = game.getBoard();
-    }
-     
+    }     
+
     /**
      * Close JPA resources after all tests.
      */
