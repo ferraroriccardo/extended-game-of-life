@@ -188,7 +188,7 @@ public class Cell implements Evolvable, Interactable {
         this.tile.interact(this);
 
         // Start by assuming the cell retains its current state
-        Boolean willLive = this.isAlive;
+        Boolean willLive = this.isAlive();
 
         // overpopulation
         if (aliveNeighbors > maxThreshold) {
@@ -219,6 +219,8 @@ public class Cell implements Evolvable, Interactable {
             
         if (this.isAlive && !willLive)
             this.setLifePoints(this.getLifePoints() - 1);         
+        if (this.getLifePoints() < 0)
+            willLive = false;
         return willLive;
     }
 
@@ -312,6 +314,10 @@ public class Cell implements Evolvable, Interactable {
      * @return true if the cell is alive; false if it is dead
      */
     public boolean isAlive() {
+        if (this.getLifePoints() < 0)
+            this.setAlive(false);
+        else
+            this.setAlive(true);
         return isAlive;
     }
 
