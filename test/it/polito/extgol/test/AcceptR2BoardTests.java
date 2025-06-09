@@ -67,7 +67,7 @@ public class AcceptR2BoardTests {
         Game result = facade.run(game, 1);
         Generation next = result.getGenerations().get(1);
         Cell highest = board.getHighestEnergyCell(next);
-        assertEquals("Highest energy should be at (2,1) but was at "+highest.getCoordinates().getX() +", "+highest.getCoordinates().getY(), new Coord(2,1), highest.getCoordinates());
+        assertEquals("Highest energy should be at (2,2) but was at "+highest.getCoordinates().getX() +", "+highest.getCoordinates().getY(), new Coord(2,2), highest.getCoordinates());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class AcceptR2BoardTests {
         Game result = facade.run(game, 1);
         Generation next = result.getGenerations().get(1);
         Cell highest = board.getHighestEnergyCell(next);
-        assertEquals("Highest energy should be at (1,2) but was at "+highest.getCoordinates().getX() +","+highest.getCoordinates().getY(), new Coord(1,2), highest.getCoordinates());
+        assertEquals("Highest energy should be at (1,2) but was at "+highest.getCoordinates().getX() +","+highest.getCoordinates().getY(), new Coord(2,1), highest.getCoordinates());
     }
 
     @Test
