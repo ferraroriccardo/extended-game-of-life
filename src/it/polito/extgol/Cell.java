@@ -428,7 +428,7 @@ public class Cell implements Evolvable, Interactable {
                     case HEALER:
                         break;
                     case VAMPIRE:
-                        if (this.isAlive() && this.getLifePoints() >= 0) {
+                        if (this.isAlive() && this.getLifePoints() > 0) {
                             otherCell.setLifePoints(otherCell.getLifePoints() + 1);
                             this.setLifePoints(this.getLifePoints() - 1);
                             if (superVampire) {
@@ -441,7 +441,7 @@ public class Cell implements Evolvable, Interactable {
                     }
                 break;
             case VAMPIRE:
-                    if (otherCell.isAlive() && otherCell.getLifePoints() >= 0 && !otherCell.getBiteList().contains(this.getCoordinates())) {
+                    if (otherCell.isAlive() && otherCell.getLifePoints() > 0 && !otherCell.getBiteList().contains(this.getCoordinates())) {
                         switch (otherMood) {
                             case NAIVE:
                                 otherCell.setFutureMood(VAMPIRE);
