@@ -198,7 +198,7 @@ public class Tile implements Interactable{
     public void setLifePointModifier(Integer lifePointsModifier) {
         Objects.requireNonNull(lifePointsModifier);
         
-        this.lifePointModifier = lifePointsModifier;
+        this.lifePointModifier += lifePointsModifier;
         
     }
     
@@ -225,7 +225,7 @@ public class Tile implements Interactable{
         Objects.requireNonNull(other);
         
         if (cell.isAlive()) {
-            other.lifepoints += getLifePointModifier();
+            other.setLifePoints(other.getLifePoints() + getLifePointModifier());
         }
     }
 
