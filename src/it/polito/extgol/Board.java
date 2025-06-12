@@ -336,9 +336,9 @@ public class Board {
      */
     public Cell getHighestEnergyCell(Generation gen) {
         Objects.requireNonNull(gen);
-
+    
         return gen.getAliveCells().stream()
-        .max(Comparator.comparing(Cell::getLifePoints).thenComparing(Cell::getY).thenComparing(Cell::getX))
+        .max(Comparator.comparing(Cell::getLifePoints).thenComparing(Cell::getX).reversed().thenComparing(Cell::getY).reversed())
         .orElse(null);
     }
 
