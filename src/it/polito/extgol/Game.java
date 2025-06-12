@@ -258,8 +258,7 @@ public class Game {
 
             case FAMINE -> tile.setLifePointModifier(-1);
 
-            case BLOOM -> {if (cell.isAlive()) 
-                                tile.setLifePointModifier(+2);}
+            case BLOOM -> tile.setLifePointModifier(+2);
 
             case BLOOD_MOON -> tile.setEnableSuperVampire(true);
 
