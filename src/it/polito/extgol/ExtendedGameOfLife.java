@@ -131,7 +131,7 @@ public class ExtendedGameOfLife {
         current = next;
 
         game.getBoard().getTiles().stream().forEach(t -> {
-            t.setLifePointModifier(0);
+            t.setLifePointModifier(-1* t.getLifePointModifier());
             t.setEnableSuperVampire(false);
         });
     }

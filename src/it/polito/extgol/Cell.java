@@ -219,6 +219,8 @@ public class Cell implements Evolvable, Interactable {
             
         if (this.isAlive && !willLive)
             this.setLifePoints(this.getLifePoints() - 1);         
+        if (this.getLifePoints() < 0)
+            willLive = false;
         return willLive;
     }
 
