@@ -338,7 +338,7 @@ public class Board {
         Objects.requireNonNull(gen);
     
         return gen.getAliveCells().stream()
-        .max(Comparator.comparing(Cell::getLifePoints).thenComparing(Cell::getX).reversed().thenComparing(Cell::getY).reversed())
+        .max(Comparator.comparing(Cell::getLifePoints).thenComparing((Cell c) -> c.getCoordinates().getY(), Comparator.reverseOrder()).thenComparing((Cell c) -> c.getCoordinates().getX(), Comparator.reverseOrder()))
         .orElse(null);
     }
 
