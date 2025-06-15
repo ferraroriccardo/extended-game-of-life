@@ -278,8 +278,6 @@ public class ExtGOLR1CellsTests {
         //vampire has stolen 1 energy from each neighbour
         int energy=lp1.get(vamp1);
         assertEquals(4, energy);
-
     }
     
 }
-

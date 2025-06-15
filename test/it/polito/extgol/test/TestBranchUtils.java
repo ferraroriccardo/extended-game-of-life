@@ -47,7 +47,7 @@ public class TestBranchUtils {
      */
     public static void assumeBranch(String... rs){
         Assume.assumeTrue("Skipping since not in any of " + Arrays.toString(rs) + " branches", 
-                          currentBranch.equals("main") ||
+                          currentBranch.equals("main") || currentBranch.equals("exam-lab-test") ||
                           Arrays.stream(rs)
                           .allMatch(r -> currentBranch.toLowerCase().contains("-" + r.toLowerCase()) ));
     }
